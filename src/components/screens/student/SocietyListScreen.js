@@ -1,8 +1,12 @@
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase.js";
+import SocietyCard from "../../UI/SocietyCard";
+import { useNavigation } from "@react-navigation/native";
 
-export default function StudentHomeScreen() {
+export default function SocietyListScreen() {
+  const navigation = useNavigation();
+
   const [societies, setSocieties] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,13 +46,15 @@ export default function StudentHomeScreen() {
   return (
     <FlatList
       data={societies}
-      keyExtractor={(item) => item.society_id}
+      keyExtractor={(item) => item.society_id.toString()}
+      //rendering the society list
       renderItem={({ item }) => (
-        <View style={styles.card}>
-          <Text style={styles.name}>{item.society_name}</Text>
-          <Text>{item.society_category?.category_name}</Text>
-          <Text>{item.description}</Text>
-        </View>
+        <SocietyCard
+          society={item}
+          onPress={() =>
+            navigation.navigate("SocietyDetail", { society: item })
+          }
+        />
       )}
     />
   );

@@ -10,10 +10,6 @@ export default function SocietyCard({ society, onPress }) {
           {society.society_category?.category_name}
         </Text>
 
-        <Text style={styles.description}>
-          {society.description}
-        </Text>
-
         <Text style={styles.link}>View Society</Text>
       </View>
     </Pressable>
