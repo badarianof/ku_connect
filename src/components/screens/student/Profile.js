@@ -1,9 +1,9 @@
 import { View, Text } from 'react-native';
 
-export default function HomeScreen() {
+export default function StudentProfile() {
   return (
     <View>
-      <Text>Student Search</Text>
+      <Text>Student Profile</Text>
     </View>
   );
 }
