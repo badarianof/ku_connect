@@ -12,7 +12,7 @@ export default function RoleSelectScreen({ navigation }) {
 
       <Button
         title="Society"
-        onPress={() => navigation.navigate("LeaderStack")}
+        onPress={() => navigation.navigate("LeaderTabs")}
       />
     </View>
   );
