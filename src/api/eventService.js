@@ -1,15 +1,15 @@
 import { supabase } from "./supabase";
 
-// Handles database interaction
+// CREATE EVENT
 export async function createEvent(eventData) {
   const { data, error } = await supabase
     .from("event")
     .insert([eventData]);
 
   if (error) {
-    console.error("Supabase Error:", error);
-    throw error;
+    console.error("Error creating event:", error);
+    return { error };
   }
 
-  return data;
+  return { data };
 }
