@@ -8,10 +8,14 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { handleCreateEvent } from "../../controller/eventController";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Platform, Pressable } from "react-native";
 
 export default function CreateEventsScreen() {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
@@ -58,6 +62,9 @@ export default function CreateEventsScreen() {
     }
   };
 
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedTime, setSelectedTime] = useState(new Date());
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Create Event</Text>
@@ -76,12 +83,26 @@ export default function CreateEventsScreen() {
         style={styles.input}
       />
 
-      <TextInput
-        placeholder="Date (YYYY-MM-DD)"
-        value={date}
-        onChangeText={setDate}
-        style={styles.input}
-      />
+      <Pressable onPress={() => setShowDatePicker(true)}>
+        <Text style={styles.input}>{date ? date : "Select Date"}</Text>
+      </Pressable>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate || new Date()}
+          mode="date"
+          display="default"
+          onChange={(event, pickedDate) => {
+            setShowDatePicker(false);
+
+            if (pickedDate) {
+              const formatted = pickedDate.toISOString().split("T")[0];
+              setSelectedDate(pickedDate);
+              setDate(formatted);
+            }
+          }}
+        />
+      )}
 
       <TextInput
         placeholder="Time (HH:MM)"
