@@ -1,7 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RoleSelectScreen from "../screens/RoleSelectionScreen";
 import StudentTabs from "./student/StudentTabs";
-import LeaderTabs from "./society/LeaderTabs";
+import SocietySelectScreen from "../screens/society/SocietySelectScreen";
+import LeaderNavigator from "./society/LeaderNavigator";
 
 const Stack = createNativeStackNavigator();
 
@@ -24,8 +25,14 @@ export default function AppNavigator() {
 
       {/* LEADER SIDE */}
       <Stack.Screen
-        name="LeaderTabs"
-        component={LeaderTabs}
+        name="SocietySelectScreen"
+        component={SocietySelectScreen}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="LeaderFlow"
+        component={LeaderNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

@@ -7,16 +7,31 @@ import {
   ScrollView,
 } from "react-native";
 import { useState } from "react";
+import { useSociety } from "../../../context/SocietyContext";
 import { handleCreateEvent } from "../../controller/eventController";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Platform, Pressable } from "react-native";
+import { Pressable } from "react-native";
 
 export default function CreateEventsScreen() {
+  const { society } = useSociety();
+
+  if (!society) {
+    return (
+      <View>
+        <Text>No society selected</Text>
+      </View>
+    );
+  }
+
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+
   const [time, setTime] = useState("");
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [additional_link, setAdditional_link] = useState("");
@@ -32,6 +47,7 @@ export default function CreateEventsScreen() {
     try {
       const result = await handleCreateEvent({
         title,
+        society_id: society.society_id,
         date,
         time,
         location,
@@ -61,9 +77,6 @@ export default function CreateEventsScreen() {
       alert("Something went wrong");
     }
   };
-
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [selectedTime, setSelectedTime] = useState(new Date());
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -104,12 +117,26 @@ export default function CreateEventsScreen() {
         />
       )}
 
-      <TextInput
-        placeholder="Time (HH:MM)"
-        value={time}
-        onChangeText={setTime}
-        style={styles.input}
-      />
+      <Pressable onPress={() => setShowTimePicker(true)}>
+        <Text style={styles.input}>{time ? time : "Select Time"}</Text>
+      </Pressable>
+
+      {showTimePicker && (
+        <DateTimePicker
+          value={selectedTime || new Date()}
+          mode="time"
+          display="default"
+          onChange={(event, pickedTime) => {
+            setShowTimePicker(false);
+
+            if (pickedTime) {
+              const timeString = pickedTime.toTimeString().slice(0, 5); // HH:MM
+              setSelectedTime(pickedTime);
+              setTime(timeString);
+            }
+          }}
+        />
+      )}
 
       <TextInput
         placeholder="Location"

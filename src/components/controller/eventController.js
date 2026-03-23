@@ -2,7 +2,7 @@ import { createEvent } from "../../api/eventService";
 
 export async function handleCreateEvent(formData) {
   const eventData = {
-    society_id: "f968cdfe-3264-45a7-b1a3-e4ae6643e948",
+    society_id: formData.society_id,
     title: formData.title,
     event_date: formData.date,
     time: formData.time,
