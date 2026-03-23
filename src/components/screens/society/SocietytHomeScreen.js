@@ -7,6 +7,7 @@ export default function SocietyHomeScreen() {
   const { society } = useSociety();
   const [upcomingEvent, setUpcomingEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pastEvent, setPastEvent] = useState(null);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -19,6 +20,7 @@ export default function SocietyHomeScreen() {
     const fetchEvents = async () => {
       const today = new Date().toISOString().split("T")[0];
 
+      // upcoming
       const { data, error } = await supabase
         .from("event")
         .select("*")
@@ -30,15 +32,27 @@ export default function SocietyHomeScreen() {
 
       console.log("upcoming:", data);
       console.log("error:", error);
-
       if (!error) setUpcomingEvent(data);
+
+      // past
+      const { data: pastData, error: pastError } = await supabase
+        .from("event")
+        .select("*")
+        .eq("society_id", society.society_id)
+        .lt("event_date", today)
+        .order("event_date", { ascending: false })
+        .limit(1)
+        .single();
+
+      console.log("past:", pastData);
+      console.log("past error:", pastError);
+      if (!pastError) setPastEvent(pastData);
+
       setLoading(false);
     };
 
     fetchEvents();
   }, []);
-
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
     <View style={styles.container}>
@@ -55,6 +69,18 @@ export default function SocietyHomeScreen() {
           </>
         ) : (
           <Text>No upcoming events</Text>
+        )}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Past Event</Text>
+        {pastEvent ? (
+          <>
+            <Text style={styles.eventTitle}>{pastEvent.title}</Text>
+            <Text>{pastEvent.event_date}</Text>
+          </>
+        ) : (
+          <Text>No past events</Text>
         )}
       </View>
     </View>
