@@ -1,32 +1,13 @@
-<<<<<<< HEAD
-import { View, Text } from "react-native";
-=======
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
->>>>>>> 67d6beaded3646afe603c1727c77020c548ad6f1
 import { useSociety } from "../../../context/SocietyContext";
 
 export default function SocietyHomeScreen() {
   const { society } = useSociety();
-<<<<<<< HEAD
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
-  };
-
-  return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <Text>
-        {getGreeting()}, {society?.society_name}
-      </Text>
-=======
   const [upcomingEvent, setUpcomingEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [pastEvent, setPastEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -39,7 +20,6 @@ export default function SocietyHomeScreen() {
     const fetchEvents = async () => {
       const today = new Date().toISOString().split("T")[0];
 
-      // upcoming
       const { data, error } = await supabase
         .from("event")
         .select("*")
@@ -49,11 +29,8 @@ export default function SocietyHomeScreen() {
         .limit(1)
         .single();
 
-      console.log("upcoming:", data);
-      console.log("error:", error);
       if (!error) setUpcomingEvent(data);
 
-      // past
       const { data: pastData, error: pastError } = await supabase
         .from("event")
         .select("*")
@@ -63,15 +40,14 @@ export default function SocietyHomeScreen() {
         .limit(1)
         .single();
 
-      console.log("past:", pastData);
-      console.log("past error:", pastError);
       if (!pastError) setPastEvent(pastData);
-
       setLoading(false);
     };
 
     fetchEvents();
   }, []);
+
+  if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
     <View style={styles.container}>
@@ -102,7 +78,6 @@ export default function SocietyHomeScreen() {
           <Text>No past events</Text>
         )}
       </View>
->>>>>>> 67d6beaded3646afe603c1727c77020c548ad6f1
     </View>
   );
 }
