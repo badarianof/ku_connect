@@ -1,8 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import StudentTabs from "./StudentTabs";
-import SocietyDetailScreen from "../screens/student/SocietyDetailScreen";
-import EventDetailScreen from "../screens/student/EventDetailScreen";
-import EventListScreen from "../screens/student/EventListScreen";
+import SocietyDetailScreen from "../../screens/student/SocietyDetailScreen";
+import EventDetailScreen from "../../screens/student/EventDetailScreen";
+import EventListScreen from "../../screens/student/EventListScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +20,7 @@ export default function StudentNavigator() {
       <Stack.Screen name="EventList" component={EventListScreen} />
 
       <Stack.Screen name="EventDetail" component={EventDetailScreen} />
+
     </Stack.Navigator>
   );
 }
