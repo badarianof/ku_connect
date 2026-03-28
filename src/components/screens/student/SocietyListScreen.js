@@ -5,7 +5,6 @@ import SocietyCard from "../../UI/SocietyCard";
 import { useNavigation } from "@react-navigation/native";
 
 export default function SocietyListScreen({ navigation }) {
-  
   // const navigation = useNavigation();
 
   const [societies, setSocieties] = useState([]);

@@ -5,11 +5,9 @@ export default function EventCard({ event, onPress }) {
     <Pressable onPress={onPress}>
       <View style={styles.card}>
         <Text style={styles.title}>{event.title}</Text>
-
-        <Text>{event.date}</Text>
-
-        <Text>{event.society}</Text>
-
+        <Text>{event.event_date}</Text>
+        <Text>{event.time}</Text>
+        <Text>{event.location}</Text>
         <Text style={styles.link}>View Details</Text>
       </View>
     </Pressable>

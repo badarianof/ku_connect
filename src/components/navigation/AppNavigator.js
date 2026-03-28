@@ -3,6 +3,7 @@ import RoleSelectScreen from "../screens/RoleSelectionScreen";
 import StudentTabs from "./student/StudentTabs";
 import SocietySelectScreen from "../screens/society/SocietySelectScreen";
 import LeaderNavigator from "./society/LeaderNavigator";
+import StudentNavigator from "./student/StudentNavigator";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,7 +20,7 @@ export default function AppNavigator() {
       {/* STUDENT SIDE */}
       <Stack.Screen
         name="StudentTabs"
-        component={StudentTabs}
+        component={StudentNavigator}
         options={{ headerShown: false }}
       />
 

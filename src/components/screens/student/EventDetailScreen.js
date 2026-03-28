@@ -7,9 +7,9 @@ export default function EventDetailScreen({ route }) {
     <View style={styles.container}>
       <Text style={styles.title}>{event.title}</Text>
 
-      <Text>{event.date}</Text>
+      <Text>{event.event_date}</Text>
 
-      <Text>{event.society}</Text>
+      {/* <Text>{event.society}</Text> */}
 
       <Text style={styles.description}>{event.description}</Text>
     </View>
