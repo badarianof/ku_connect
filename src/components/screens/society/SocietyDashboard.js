@@ -9,29 +9,30 @@ import {
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
 import { useSociety } from "../../../context/SocietyContext";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 export default function SocietyDashboard({ navigation }) {
   const { society } = useSociety();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      const { data, error } = await supabase
-        .from("event")
-        .select("*")
-        .eq("society_id", society.society_id)
-        .order("event_date", { ascending: true });
+  useFocusEffect(
+    useCallback(() => {
+      const fetchEvents = async () => {
+        const { data, error } = await supabase
+          .from("event")
+          .select("*")
+          .eq("society_id", society.society_id)
+          .order("event_date", { ascending: true });
 
-      console.log("events:", data);
-      console.log("error:", error);
+        if (!error) setEvents(data);
+        setLoading(false);
+      };
 
-      if (!error) setEvents(data);
-      setLoading(false);
-    };
-
-    fetchEvents();
-  }, []);
+      fetchEvents();
+    }, [])
+  );
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
