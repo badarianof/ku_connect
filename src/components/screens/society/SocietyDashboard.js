@@ -4,6 +4,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   FlatList,
+  Pressable,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
@@ -51,6 +52,14 @@ export default function SocietyDashboard() {
               <Text style={styles.status}>
                 {item.event_status ?? "Published"}
               </Text>
+              <Pressable
+                style={styles.editButton}
+                onPress={() =>
+                  navigation.navigate("EditEvent", { event: item })
+                }
+              >
+                <Text style={styles.editText}>Edit</Text>
+              </Pressable>
             </View>
           )}
         />
@@ -71,4 +80,13 @@ const styles = StyleSheet.create({
   eventTitle: { fontSize: 16, fontWeight: "600" },
   date: { color: "#666", marginTop: 4 },
   status: { color: "#032D39", marginTop: 4, fontWeight: "500" },
+
+  editButton: {
+    marginTop: 8,
+    backgroundColor: "#032D39",
+    padding: 8,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  editText: { color: "white", fontWeight: "600" },
 });
