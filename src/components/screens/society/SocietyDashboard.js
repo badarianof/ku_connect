@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
 import { useSociety } from "../../../context/SocietyContext";
 
-export default function SocietyDashboard() {
+export default function SocietyDashboard({ navigation }) {
   const { society } = useSociety();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
