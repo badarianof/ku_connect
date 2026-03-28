@@ -10,6 +10,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "../../../api/supabase";
 import { useSociety } from "../../../context/SocietyContext";
 import { useFocusEffect } from "@react-navigation/native";
+import { Alert } from "react-native";
 
 export default function SocietyDashboard({ navigation }) {
   const { society } = useSociety();
@@ -34,16 +35,30 @@ export default function SocietyDashboard({ navigation }) {
   );
 
   const handleDelete = async (eventId) => {
-    const { error } = await supabase
-      .from("event")
-      .delete()
-      .eq("event_id", eventId);
+    Alert.alert(
+      "Delete Event",
+      "Are you sure you want to delete this event? This cannot be undone.",
 
-    if (error) {
-      alert("Error deleting event");
-    } else {
-      setEvents(events.filter((e) => e.event_id !== eventId));
-    }
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            const { error } = await supabase
+              .from("event")
+              .delete()
+              .eq("event_id", eventId);
+
+            if (error) {
+              alert("Error deleting event");
+            } else {
+              setEvents(events.filter((e) => e.event_id !== eventId));
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
