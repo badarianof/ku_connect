@@ -1,4 +1,12 @@
-import { View, Text, FlatList, ActivityIndicator, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  StyleSheet,
+  Pressable,
+  Image
+} from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
 
@@ -39,15 +47,31 @@ export default function StudentHomeScreen({ navigation }) {
         <FlatList
           data={events}
           keyExtractor={(item) => item.event_id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
-              onPress={() => navigation.navigate("EventDetail", { event: item })}
+              onPress={() =>
+                navigation.navigate("EventDetail", { event: item })
+              }
             >
-              <Text style={styles.eventTitle}>{item.title}</Text>
+              {item.image_url ? (
+                <Image
+                  source={{ uri: item.image_url }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.placeholder} />
+              )}
+              <Text style={styles.eventTitle} numberOfLines={1}>
+                {item.title}
+              </Text>
               <Text style={styles.date}>{item.event_date}</Text>
-              <Text style={styles.society}>{item.society?.society_name}</Text>
-              <Text style={styles.location}>{item.location}</Text>
+              <Text style={styles.society} numberOfLines={1}>
+                {item.society?.society_name}
+              </Text>
             </Pressable>
           )}
         />
@@ -69,4 +93,27 @@ const styles = StyleSheet.create({
   date: { color: "#666", marginTop: 4 },
   society: { color: "#032D39", marginTop: 4 },
   location: { color: "#666", marginTop: 2 },
+
+  row: { justifyContent: "space-between" },
+  card: {
+    width: "48%",
+    marginBottom: 12,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+  },
+  image: { width: "100%", height: 120, borderRadius: 10 },
+  placeholder: {
+    width: "100%",
+    height: 120,
+    borderRadius: 10,
+    backgroundColor: "#eee",
+  },
+  eventTitle: { fontSize: 13, fontWeight: "600", padding: 6 },
+  date: { fontSize: 11, color: "#666", paddingHorizontal: 6 },
+  society: {
+    fontSize: 11,
+    color: "#032D39",
+    paddingHorizontal: 6,
+    paddingBottom: 6,
+  },
 });
