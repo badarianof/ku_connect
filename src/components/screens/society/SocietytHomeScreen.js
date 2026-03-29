@@ -2,6 +2,8 @@ import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
 import { useSociety } from "../../../context/SocietyContext";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 export default function SocietyHomeScreen() {
   const { society } = useSociety();
@@ -16,36 +18,38 @@ export default function SocietyHomeScreen() {
     return "Good Evening";
   };
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      const today = new Date().toISOString().split("T")[0];
+  useFocusEffect(
+    useCallback(() => {
+      const fetchEvents = async () => {
+        const today = new Date().toISOString().split("T")[0];
 
-      const { data, error } = await supabase
-        .from("event")
-        .select("*")
-        .eq("society_id", society.society_id)
-        .gte("event_date", today)
-        .order("event_date", { ascending: true })
-        .limit(1)
-        .single();
+        const { data, error } = await supabase
+          .from("event")
+          .select("*")
+          .eq("society_id", society.society_id)
+          .gte("event_date", today)
+          .order("event_date", { ascending: true })
+          .limit(1)
+          .single();
 
-      if (!error) setUpcomingEvent(data);
+        if (!error) setUpcomingEvent(data);
 
-      const { data: pastData, error: pastError } = await supabase
-        .from("event")
-        .select("*")
-        .eq("society_id", society.society_id)
-        .lt("event_date", today)
-        .order("event_date", { ascending: false })
-        .limit(1)
-        .single();
+        const { data: pastData, error: pastError } = await supabase
+          .from("event")
+          .select("*")
+          .eq("society_id", society.society_id)
+          .lt("event_date", today)
+          .order("event_date", { ascending: false })
+          .limit(1)
+          .single();
 
-      if (!pastError) setPastEvent(pastData);
-      setLoading(false);
-    };
+        if (!pastError) setPastEvent(pastData);
+        setLoading(false);
+      };
 
-    fetchEvents();
-  }, []);
+      fetchEvents();
+    }, [])
+  );
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 

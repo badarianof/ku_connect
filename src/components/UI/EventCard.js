@@ -1,8 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 
 export default function EventCard({ event, onPress }) {
-  const default_image =
-    "https://thumbs.dreamstime.com/b/have-fun-brush-lettering-hand-inspiring-quote-stain-background-motivating-modern-calligraphy-can-be-used-photo-overlays-75591520.jpg?w=768";
+  const default_image = "https://thumbs.dreamstime.com/b/print-206848993.jpg";
 
   return (
     <Pressable onPress={onPress}>
