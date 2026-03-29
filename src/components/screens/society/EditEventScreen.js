@@ -10,7 +10,6 @@ import { useState } from "react";
 import { supabase } from "../../../api/supabase";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Pressable } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 
 export default function EditEventScreen({ route, navigation }) {
   const { event } = route.params;
@@ -38,9 +37,23 @@ export default function EditEventScreen({ route, navigation }) {
     "Online",
   ];
 
-  const [category, setCategory] = useState(
-    event?.category ? event.category.split(",") : []
-  );
+  const [category, setCategory] = useState(() => {
+    if (!event?.category) return [];
+    if (Array.isArray(event.category)) return event.category;
+    return event.category
+      .split(",")
+      .map((c) => c.trim())
+      .filter((c) =>
+        [
+          "On Campus",
+          "Off Campus",
+          "Free",
+          "Members Only",
+          "Open to All",
+          "Online",
+        ].includes(c)
+      );
+  });
 
   const toggleCategory = (item) => {
     setCategory((prev) =>
@@ -65,7 +78,7 @@ export default function EditEventScreen({ route, navigation }) {
           description,
           additional_link,
           image_url,
-          category,
+          category: category.join(","),
         })
         .eq("event_id", event.event_id);
 
