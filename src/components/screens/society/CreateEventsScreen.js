@@ -36,6 +36,8 @@ export default function CreateEventsScreen() {
   const [description, setDescription] = useState("");
   const [additional_link, setAdditional_link] = useState("");
   const [image_url, setImage_url] = useState("");
+  const default_image =
+    "https://thumbs.dreamstime.com/b/have-fun-brush-lettering-hand-inspiring-quote-stain-background-motivating-modern-calligraphy-can-be-used-photo-overlays-75591520.jpg?w=768";
 
   const CATEGORIES = [
     "On Campus",
@@ -193,6 +195,7 @@ export default function CreateEventsScreen() {
         style={styles.input}
       />
 
+      <Text style={styles.label}>Image URL</Text>
       <TextInput
         placeholder="Image URL"
         value={image_url}
@@ -238,5 +241,4 @@ const styles = StyleSheet.create({
   categoryChipSelected: { backgroundColor: "#032D39" },
   categoryChipText: { color: "#032D39" },
   categoryChipTextSelected: { color: "white" },
-
 });
