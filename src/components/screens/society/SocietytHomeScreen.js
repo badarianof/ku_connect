@@ -1,11 +1,17 @@
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Pressable,
+} from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
 import { useSociety } from "../../../context/SocietyContext";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 
-export default function SocietyHomeScreen() {
+export default function SocietyHomeScreen({ navigation }) {
   const { society } = useSociety();
   const [upcomingEvent, setUpcomingEvent] = useState(null);
   const [pastEvent, setPastEvent] = useState(null);
@@ -62,10 +68,14 @@ export default function SocietyHomeScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Upcoming Event</Text>
         {upcomingEvent ? (
-          <>
+          <Pressable
+            onPress={() =>
+              navigation.navigate("EditEvent", { event: upcomingEvent })
+            }
+          >
             <Text style={styles.eventTitle}>{upcomingEvent.title}</Text>
             <Text>{upcomingEvent.event_date}</Text>
-          </>
+          </Pressable>
         ) : (
           <Text>No upcoming events</Text>
         )}
@@ -74,10 +84,14 @@ export default function SocietyHomeScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Past Event</Text>
         {pastEvent ? (
-          <>
+          <Pressable
+            onPress={() =>
+              navigation.navigate("EditEvent", { event: pastEvent })
+            }
+          >
             <Text style={styles.eventTitle}>{pastEvent.title}</Text>
             <Text>{pastEvent.event_date}</Text>
-          </>
+          </Pressable>
         ) : (
           <Text>No past events</Text>
         )}
