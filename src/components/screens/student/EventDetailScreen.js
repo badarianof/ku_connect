@@ -35,18 +35,8 @@ export default function EventDetailScreen({ route }) {
         <Text>{event.category}</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.label}>Description</Text>
-        <Text>{event.description}</Text>
-      </View>
-
-      {event.additional_link ? (
-        <View style={styles.section}>
-          <Text style={styles.label}>Additional Link</Text>
-          <Text>{event.additional_link}</Text>
-        </View>
-      ) : null}
-    </ScrollView>
+      <Text style={styles.description}>{event.description}</Text>
+    </View>
   );
 }
 

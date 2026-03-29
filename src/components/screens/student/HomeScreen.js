@@ -5,7 +5,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Pressable,
-  Image,
+  Image
 } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
@@ -81,6 +81,19 @@ export default function StudentHomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20 },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
+  card: {
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  eventTitle: { fontSize: 16, fontWeight: "600" },
+  date: { color: "#666", marginTop: 4 },
+  society: { color: "#032D39", marginTop: 4 },
+  location: { color: "#666", marginTop: 2 },
+
   row: { justifyContent: "space-between" },
   card: {
     width: "48%",
