@@ -10,6 +10,7 @@ import { useState } from "react";
 import { supabase } from "../../../api/supabase";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Pressable } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 
 export default function EditEventScreen({ route, navigation }) {
   const { event } = route.params;
@@ -27,7 +28,25 @@ export default function EditEventScreen({ route, navigation }) {
   const [description, setDescription] = useState(event.description);
   const [additional_link, setAdditional_link] = useState(event.additional_link);
   const [image_url, setImage_url] = useState(event.image_url);
-  const [category, setCategory] = useState(event.category);
+
+  const CATEGORIES = [
+    "On Campus",
+    "Off Campus",
+    "Free",
+    "Members Only",
+    "Open to All",
+    "Online",
+  ];
+
+  const [category, setCategory] = useState(
+    event?.category ? event.category.split(",") : []
+  );
+
+  const toggleCategory = (item) => {
+    setCategory((prev) =>
+      prev.includes(item) ? prev.filter((c) => c !== item) : [...prev, item]
+    );
+  };
 
   const handleUpdate = async () => {
     if (!title || !date || !time || !location) {
@@ -133,12 +152,27 @@ export default function EditEventScreen({ route, navigation }) {
       />
 
       <Text style={styles.label}>Category</Text>
-      <TextInput
-        placeholder="Category"
-        value={category}
-        onChangeText={setCategory}
-        style={styles.input}
-      />
+      <View style={styles.categoryContainer}>
+        {CATEGORIES.map((item) => (
+          <Pressable
+            key={item}
+            style={[
+              styles.categoryChip,
+              category.includes(item) && styles.categoryChipSelected,
+            ]}
+            onPress={() => toggleCategory(item)}
+          >
+            <Text
+              style={[
+                styles.categoryChipText,
+                category.includes(item) && styles.categoryChipTextSelected,
+              ]}
+            >
+              {item}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
 
       <Text style={styles.label}>Additional Link</Text>
       <TextInput
@@ -193,4 +227,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: { color: "white", fontWeight: "bold" },
+
+  pickerWrapper: {
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 12,
+  },
+
+  categoryContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 12,
+  },
+  categoryChip: {
+    borderWidth: 1,
+    borderColor: "#032D39",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  categoryChipSelected: { backgroundColor: "#032D39" },
+  categoryChipText: { color: "#032D39" },
+  categoryChipTextSelected: { color: "white" },
 });
