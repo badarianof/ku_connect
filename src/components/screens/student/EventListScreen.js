@@ -14,7 +14,7 @@ export default function EventListScreen({ route, navigation }) {
         .from("event")
         .select("*")
         .eq("society_id", society.society_id)
-        .order("event_date", { descending: false });
+        .order("event_date", { ascending: true });
 
       console.log("events:", data);
       console.log("error:", error);
