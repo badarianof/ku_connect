@@ -5,7 +5,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Pressable,
-  Image
+  Image,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
@@ -20,10 +20,9 @@ export default function StudentHomeScreen({ navigation }) {
 
       const { data, error } = await supabase
         .from("event")
-        .select("*, society(society_name)")
+        .select("*")
         .gte("event_date", today)
-        .order("event_date", { ascending: true })
-        .limit(5);
+        .order("event_date", { ascending: true });
 
       console.log("home events:", data);
       console.log("error:", error);
