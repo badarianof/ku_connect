@@ -17,9 +17,15 @@ export default function StudentSearch({ navigation }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const filteredSocieties = societies.filter((s) =>
-    s.society_name.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredSocieties = societies.filter((s) => {
+    const matchesQuery = s.society_name
+      .toLowerCase()
+      .includes(query.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" ||
+      s.society_category?.category_name === selectedCategory;
+    return matchesQuery && matchesCategory;
+  });
 
   const filteredEvents = events.filter((e) =>
     e.title.toLowerCase().includes(query.toLowerCase())
@@ -44,9 +50,6 @@ export default function StudentSearch({ navigation }) {
         .select(`*`)
         .order("title", { ascending: true });
 
-      console.log("events:", data);
-      console.log("event error:", error);
-
       if (!error) setEvents(data);
     };
 
@@ -59,6 +62,17 @@ export default function StudentSearch({ navigation }) {
     fetchData();
   }, []);
 
+  const CATEGORIES = [
+    "All",
+    "Academic",
+    "Cultural",
+    "Faith",
+    "Social",
+    "Sport",
+    "General",
+  ];
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
@@ -69,7 +83,6 @@ export default function StudentSearch({ navigation }) {
         onChangeText={setQuery}
         style={styles.searchBar}
       />
-
       <View style={styles.tabs}>
         <Pressable
           style={[styles.tab, activeTab === "Society" && styles.activeTab]}
@@ -100,6 +113,32 @@ export default function StudentSearch({ navigation }) {
         </Pressable>
       </View>
 
+      <Text style={styles.browseTitle}>Browse by category</Text>
+      <FlatList
+        horizontal
+        data={CATEGORIES}
+        keyExtractor={(item) => item}
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 16 }}
+        renderItem={({ item }) => (
+          <Pressable
+            style={[
+              styles.chip,
+              selectedCategory === item && styles.chipSelected,
+            ]}
+            onPress={() => setSelectedCategory(item)}
+          >
+            <Text
+              style={[
+                styles.chipText,
+                selectedCategory === item && styles.chipTextSelected,
+              ]}
+            >
+              {item}
+            </Text>
+          </Pressable>
+        )}
+      />
       {activeTab === "Society" && (
         <FlatList
           data={filteredSocieties}
@@ -120,7 +159,6 @@ export default function StudentSearch({ navigation }) {
           )}
         />
       )}
-
       {activeTab === "Events" && (
         <FlatList
           data={filteredEvents}
@@ -173,4 +211,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   societyName: { fontSize: 12, textAlign: "center", fontWeight: "500" },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#032D39",
+    marginRight: 8,
+  },
+  chipSelected: { backgroundColor: "#032D39" },
+  chipText: { color: "#032D39", fontSize: 12 },
+  chipTextSelected: { color: "white", fontSize: 12 },
 });
