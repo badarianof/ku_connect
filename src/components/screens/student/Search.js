@@ -15,6 +15,9 @@ export default function StudentSearch({ navigation }) {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("Society");
   const [societies, setSocieties] = useState([]);
+  const filteredSocieties = societies.filter((s) =>
+    s.society_name.toLowerCase().includes(query.toLowerCase())
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -77,7 +80,7 @@ export default function StudentSearch({ navigation }) {
 
       {activeTab === "Society" && (
         <FlatList
-          data={societies}
+          data={filteredSocieties}
           keyExtractor={(item) => item.society_id}
           numColumns={2}
           columnWrapperStyle={styles.row}
