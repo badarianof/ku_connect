@@ -1,9 +1,40 @@
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
-import { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  Image,
+} from "react-native";
+import { useState, useEffect } from "react";
+import { supabase } from "../../../api/supabase";
 
 export default function StudentSearch({ navigation }) {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("Society");
+  const [societies, setSocieties] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSocieties = async () => {
+      const { data, error } = await supabase
+        .from("society")
+        .select(`*, society_category(category_name)`)
+        .order("society_name", { ascending: true });
+
+      console.log("societies:", data);
+      console.log("error:", error);
+
+      if (!error) setSocieties(data);
+      setLoading(false);
+    };
+
+    fetchSocieties();
+  }, []);
+
+  if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
     <View style={styles.container}>
@@ -44,7 +75,26 @@ export default function StudentSearch({ navigation }) {
         </Pressable>
       </View>
 
-      <Text style={styles.browseTitle}>Browse by category</Text>
+      {activeTab === "Society" && (
+        <FlatList
+          data={societies}
+          keyExtractor={(item) => item.society_id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          renderItem={({ item }) => (
+            <Pressable
+              style={styles.card}
+              onPress={() =>
+                navigation.navigate("SocietyDetail", { society: item })
+              }
+            >
+              <Text style={styles.societyName} numberOfLines={2}>
+                {item.society_name}
+              </Text>
+            </Pressable>
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -68,5 +118,13 @@ const styles = StyleSheet.create({
   activeTab: { backgroundColor: "#032D39" },
   tabText: { color: "#032D39" },
   activeTabText: { color: "white" },
-  browseTitle: { fontWeight: "bold", marginBottom: 12 },
+  row: { gap: 8, marginBottom: 8 },
+  card: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+    alignItems: "center",
+  },
+  societyName: { fontSize: 12, textAlign: "center", fontWeight: "500" },
 });
