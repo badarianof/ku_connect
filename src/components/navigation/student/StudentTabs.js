@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import HomeScreen from "../../screens/student/HomeScreen";
+import StudentHomeScreen from "../../screens/student/StudentHomeScreen";
 import SocietyListScreen from "../../screens/student/SocietyListScreen";
 import Search from "../../screens/student/Search";
 import Profile from "../../screens/student/Profile";
@@ -10,7 +10,7 @@ const Tab = createBottomTabNavigator();
 export default function StudentTabs() {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={StudentHomeScreen} />
 
       <Tab.Screen name="Societies" component={SocietyListScreen} />
 

@@ -5,6 +5,7 @@ import SocietySelectScreen from "../screens/society/SocietySelectScreen";
 import LeaderNavigator from "./society/LeaderNavigator";
 import StudentLoginScreen from "../screens/student/StudentLoginScreen";
 import StudentSignupScreen from "../screens/student/SignUpScreen";
+import StudentHomeScreen from "../screens/student/StudentHomeScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,11 @@ export default function AppNavigator() {
       />
 
       {/* STUDENT AUTH */}
+      {/* <Stack.Screen
+        name="StudentHomeScreen"
+        component={StudentHomeScreen}
+        options={{ headerShown: false }}
+      /> */}
       <Stack.Screen
         name="StudentLogin"
         component={StudentLoginScreen}

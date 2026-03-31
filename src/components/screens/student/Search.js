@@ -6,7 +6,6 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  Image,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
@@ -15,10 +14,16 @@ export default function StudentSearch({ navigation }) {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("Society");
   const [societies, setSocieties] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const filteredSocieties = societies.filter((s) =>
     s.society_name.toLowerCase().includes(query.toLowerCase())
   );
-  const [loading, setLoading] = useState(true);
+
+  const filteredEvents = events.filter((e) =>
+    e.title.toLowerCase().includes(query.toLowerCase())
+  );
 
   useEffect(() => {
     const fetchSocieties = async () => {
@@ -28,13 +33,30 @@ export default function StudentSearch({ navigation }) {
         .order("society_name", { ascending: true });
 
       console.log("societies:", data);
-      console.log("error:", error);
+      console.log("society error:", error);
 
       if (!error) setSocieties(data);
+    };
+
+    const fetchEvents = async () => {
+      const { data, error } = await supabase
+        .from("event")
+        .select(`*`)
+        .order("title", { ascending: true });
+
+      console.log("events:", data);
+      console.log("event error:", error);
+
+      if (!error) setEvents(data);
+    };
+
+    const fetchData = async () => {
+      await fetchSocieties();
+      await fetchEvents();
       setLoading(false);
     };
 
-    fetchSocieties();
+    fetchData();
   }, []);
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
@@ -81,7 +103,7 @@ export default function StudentSearch({ navigation }) {
       {activeTab === "Society" && (
         <FlatList
           data={filteredSocieties}
-          keyExtractor={(item) => item.society_id}
+          keyExtractor={(item) => item.society_id.toString()}
           numColumns={2}
           columnWrapperStyle={styles.row}
           renderItem={({ item }) => (
@@ -93,6 +115,27 @@ export default function StudentSearch({ navigation }) {
             >
               <Text style={styles.societyName} numberOfLines={2}>
                 {item.society_name}
+              </Text>
+            </Pressable>
+          )}
+        />
+      )}
+
+      {activeTab === "Events" && (
+        <FlatList
+          data={filteredEvents}
+          keyExtractor={(item) => item.event_id.toString()}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          renderItem={({ item }) => (
+            <Pressable
+              style={styles.card}
+              onPress={() =>
+                navigation.navigate("EventDetail", { event: item })
+              }
+            >
+              <Text style={styles.societyName} numberOfLines={2}>
+                {item.title}
               </Text>
             </Pressable>
           )}
