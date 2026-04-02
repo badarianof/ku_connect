@@ -6,16 +6,60 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
 
+const CATEGORIES = [
+  "All",
+  "Academic",
+  "Cultural",
+  "Faith",
+  "Arts & Activities",
+  "Liberation & Campaigns",
+];
+
+const EVENT_CATEGORIES = [
+  "All",
+  "On Campus",
+  "Off Campus",
+  "Free",
+  "Members Only",
+  "Open to All",
+  "Online",
+];
+
 export default function StudentSearch({ navigation }) {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("Society");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [societies, setSocieties] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: socData, error: socError } = await supabase
+        .from("society")
+        .select(`*, society_category(category_name)`)
+        .order("society_name", { ascending: true });
+
+      console.log("societies:", socData);
+      console.log("society error:", socError);
+      if (!socError) setSocieties(socData);
+
+      const { data: evData, error: evError } = await supabase
+        .from("event")
+        .select("*")
+        .order("title", { ascending: true });
+
+      if (!evError) setEvents(evData);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
 
   const filteredSocieties = societies.filter((s) => {
     const matchesQuery = s.society_name
@@ -31,48 +75,6 @@ export default function StudentSearch({ navigation }) {
     e.title.toLowerCase().includes(query.toLowerCase())
   );
 
-  useEffect(() => {
-    const fetchSocieties = async () => {
-      const { data, error } = await supabase
-        .from("society")
-        .select(`*, society_category(category_name)`)
-        .order("society_name", { ascending: true });
-
-      console.log("societies:", data);
-      console.log("society error:", error);
-
-      if (!error) setSocieties(data);
-    };
-
-    const fetchEvents = async () => {
-      const { data, error } = await supabase
-        .from("event")
-        .select(`*`)
-        .order("title", { ascending: true });
-
-      if (!error) setEvents(data);
-    };
-
-    const fetchData = async () => {
-      await fetchSocieties();
-      await fetchEvents();
-      setLoading(false);
-    };
-
-    fetchData();
-  }, []);
-
-  const CATEGORIES = [
-    "All",
-    "Academic",
-    "Cultural",
-    "Faith",
-    "Social",
-    "Sport",
-    "General",
-  ];
-  const [selectedCategory, setSelectedCategory] = useState("All");
-
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
@@ -83,6 +85,7 @@ export default function StudentSearch({ navigation }) {
         onChangeText={setQuery}
         style={styles.searchBar}
       />
+
       <View style={styles.tabs}>
         <Pressable
           style={[styles.tab, activeTab === "Society" && styles.activeTab]}
@@ -97,7 +100,6 @@ export default function StudentSearch({ navigation }) {
             Society
           </Text>
         </Pressable>
-
         <Pressable
           style={[styles.tab, activeTab === "Events" && styles.activeTab]}
           onPress={() => setActiveTab("Events")}
@@ -114,14 +116,16 @@ export default function StudentSearch({ navigation }) {
       </View>
 
       <Text style={styles.browseTitle}>Browse by category</Text>
-      <FlatList
+
+      <ScrollView
         horizontal
-        data={CATEGORIES}
-        keyExtractor={(item) => item}
         showsHorizontalScrollIndicator={false}
-        style={{ marginBottom: 16 }}
-        renderItem={({ item }) => (
+        style={{ flexGrow: 0 }}
+        contentContainerStyle={{ flexDirection: "row", paddingBottom: 12 }}
+      >
+        {CATEGORIES.map((item) => (
           <Pressable
+            key={item}
             style={[
               styles.chip,
               selectedCategory === item && styles.chipSelected,
@@ -137,12 +141,13 @@ export default function StudentSearch({ navigation }) {
               {item}
             </Text>
           </Pressable>
-        )}
-      />
+        ))}
+      </ScrollView>
+
       {activeTab === "Society" && (
         <FlatList
           data={filteredSocieties}
-          keyExtractor={(item) => item.society_id.toString()}
+          keyExtractor={(item) => item.society_id}
           numColumns={2}
           columnWrapperStyle={styles.row}
           renderItem={({ item }) => (
@@ -159,10 +164,11 @@ export default function StudentSearch({ navigation }) {
           )}
         />
       )}
+
       {activeTab === "Events" && (
         <FlatList
           data={filteredEvents}
-          keyExtractor={(item) => item.event_id.toString()}
+          keyExtractor={(item) => item.event_id}
           numColumns={2}
           columnWrapperStyle={styles.row}
           renderItem={({ item }) => (
@@ -202,6 +208,7 @@ const styles = StyleSheet.create({
   activeTab: { backgroundColor: "#032D39" },
   tabText: { color: "#032D39" },
   activeTabText: { color: "white" },
+  browseTitle: { fontWeight: "bold", marginBottom: 12 },
   row: { gap: 8, marginBottom: 8 },
   card: {
     flex: 1,
