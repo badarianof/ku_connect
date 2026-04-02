@@ -19,7 +19,6 @@ const CATEGORIES = [
   "Arts & Activities",
   "Liberation & Campaigns",
 ];
-
 const EVENT_CATEGORIES = [
   "All",
   "On Campus",
@@ -45,8 +44,6 @@ export default function StudentSearch({ navigation }) {
         .select(`*, society_category(category_name)`)
         .order("society_name", { ascending: true });
 
-      console.log("societies:", socData);
-      console.log("society error:", socError);
       if (!socError) setSocieties(socData);
 
       const { data: evData, error: evError } = await supabase
@@ -71,9 +68,16 @@ export default function StudentSearch({ navigation }) {
     return matchesQuery && matchesCategory;
   });
 
-  const filteredEvents = events.filter((e) =>
-    e.title.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredEvents = events.filter((e) => {
+    const matchesQuery = e.title.toLowerCase().includes(query.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" ||
+      e.category
+        ?.split(",")
+        .map((c) => c.trim())
+        .includes(selectedCategory);
+    return matchesQuery && matchesCategory;
+  });
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
@@ -89,7 +93,10 @@ export default function StudentSearch({ navigation }) {
       <View style={styles.tabs}>
         <Pressable
           style={[styles.tab, activeTab === "Society" && styles.activeTab]}
-          onPress={() => setActiveTab("Society")}
+          onPress={() => {
+            setActiveTab("Society");
+            setSelectedCategory("All");
+          }}
         >
           <Text
             style={[
@@ -102,7 +109,10 @@ export default function StudentSearch({ navigation }) {
         </Pressable>
         <Pressable
           style={[styles.tab, activeTab === "Events" && styles.activeTab]}
-          onPress={() => setActiveTab("Events")}
+          onPress={() => {
+            setActiveTab("Events");
+            setSelectedCategory("All");
+          }}
         >
           <Text
             style={[
@@ -120,28 +130,30 @@ export default function StudentSearch({ navigation }) {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }}
+        style={{ flexGrow: 0, height: 44 }}
         contentContainerStyle={{ flexDirection: "row", paddingBottom: 12 }}
       >
-        {CATEGORIES.map((item) => (
-          <Pressable
-            key={item}
-            style={[
-              styles.chip,
-              selectedCategory === item && styles.chipSelected,
-            ]}
-            onPress={() => setSelectedCategory(item)}
-          >
-            <Text
+        {(activeTab === "Society" ? CATEGORIES : EVENT_CATEGORIES).map(
+          (item) => (
+            <Pressable
+              key={item}
               style={[
-                styles.chipText,
-                selectedCategory === item && styles.chipTextSelected,
+                styles.chip,
+                selectedCategory === item && styles.chipSelected,
               ]}
+              onPress={() => setSelectedCategory(item)}
             >
-              {item}
-            </Text>
-          </Pressable>
-        ))}
+              <Text
+                style={[
+                  styles.chipText,
+                  selectedCategory === item && styles.chipTextSelected,
+                ]}
+              >
+                {item}
+              </Text>
+            </Pressable>
+          )
+        )}
       </ScrollView>
 
       {activeTab === "Society" && (
@@ -225,6 +237,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#032D39",
     marginRight: 8,
+    height: 32,
+    justifyContent: "center",
   },
   chipSelected: { backgroundColor: "#032D39" },
   chipText: { color: "#032D39", fontSize: 12 },
