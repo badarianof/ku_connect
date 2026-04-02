@@ -1,9 +1,11 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RoleSelectScreen from "../screens/RoleSelectionScreen";
-import StudentTabs from "./student/StudentTabs";
+import StudentNavigator from "./student/StudentNavigator";
 import SocietySelectScreen from "../screens/society/SocietySelectScreen";
 import LeaderNavigator from "./society/LeaderNavigator";
-import StudentNavigator from "./student/StudentNavigator";
+import StudentLoginScreen from "../screens/student/StudentLoginScreen";
+import StudentSignupScreen from "../screens/student/SignUpScreen";
+import StudentHomeScreen from "../screens/student/StudentHomeScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -14,6 +16,23 @@ export default function AppNavigator() {
       <Stack.Screen
         name="RoleSelect"
         component={RoleSelectScreen}
+        options={{ headerShown: false }}
+      />
+
+      {/* STUDENT AUTH */}
+      {/* <Stack.Screen
+        name="StudentHomeScreen"
+        component={StudentHomeScreen}
+        options={{ headerShown: false }}
+      /> */}
+      <Stack.Screen
+        name="StudentLogin"
+        component={StudentLoginScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="StudentSignup"
+        component={StudentSignupScreen}
         options={{ headerShown: false }}
       />
 
@@ -30,7 +49,6 @@ export default function AppNavigator() {
         component={SocietySelectScreen}
         options={{ headerShown: false }}
       />
-
       <Stack.Screen
         name="LeaderFlow"
         component={LeaderNavigator}

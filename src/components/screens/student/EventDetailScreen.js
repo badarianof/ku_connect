@@ -36,7 +36,7 @@ export default function EventDetailScreen({ route }) {
       </View>
 
       <Text style={styles.description}>{event.description}</Text>
-    </View>
+    </ScrollView>
   );
 }
 
