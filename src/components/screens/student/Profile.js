@@ -9,9 +9,11 @@ import {
   FlatList,
   Image,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "../../../api/supabase";
 import { Modal } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 export default function StudentProfile({ navigation }) {
   const [student, setStudent] = useState(null);
@@ -27,38 +29,37 @@ export default function StudentProfile({ navigation }) {
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop";
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  useFocusEffect(
+    useCallback(() => {
+      const fetchProfile = async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-      if (user) {
-        // fetch student profile
-        const { data, error } = await supabase
-          .from("student")
-          .select("*")
-          .eq("auth_id", user.id)
-          .single();
+        if (user) {
+          const { data, error } = await supabase
+            .from("student")
+            .select("*")
+            .eq("auth_id", user.id)
+            .single();
 
-        if (!error) setStudent(data);
+          if (!error) setStudent(data);
 
-        // fetch followed societies
-        const { data: followsData, error: followsError } = await supabase
-          .from("follows")
-          .select("society(society_id, society_name, image_url)")
-          .eq("student_id", user.id);
+          const { data: followsData, error: followsError } = await supabase
+            .from("follows")
+            .select("society(society_id, society_name, image_url, description)")
+            .eq("student_id", user.id);
 
-        console.log("follows:", followsData);
-        if (!followsError)
-          setFollowedSocieties(followsData.map((f) => f.society));
-      }
+          if (!followsError)
+            setFollowedSocieties(followsData.map((f) => f.society));
+        }
 
-      setLoading(false);
-    };
+        setLoading(false);
+      };
 
-    fetchProfile();
-  }, []);
+      fetchProfile();
+    }, [])
+  );
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -198,9 +199,7 @@ export default function StudentProfile({ navigation }) {
                 setSelectedSociety(null);
               }}
             >
-              <Text style={styles.closeText}>
-                Following (tap to unfollow)
-              </Text>
+              <Text style={styles.closeText}>Following (tap to unfollow)</Text>
             </Pressable>
           </View>
         </View>
