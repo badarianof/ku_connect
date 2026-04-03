@@ -6,17 +6,38 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  FlatList,
 } from "react-native";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useSociety } from "../../../context/SocietyContext";
+import { supabase } from "../../../api/supabase";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function SocietyProfile({ navigation }) {
   const { society } = useSociety();
-
-  if (!society) return <ActivityIndicator style={{ flex: 1 }} />;
+  const [events, setEvents] = useState([]);
 
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop";
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchEvents = async () => {
+        const { data, error } = await supabase
+          .from("event")
+          .select("*")
+          .eq("society_id", society.society_id)
+          .order("event_date", { ascending: true })
+          .limit(6);
+
+        if (!error) setEvents(data);
+      };
+
+      fetchEvents();
+    }, [])
+  );
+
+  if (!society) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -35,7 +56,6 @@ export default function SocietyProfile({ navigation }) {
             <Text style={styles.editIcon}>✏️</Text>
           </Pressable>
         </View>
-
         <Text style={styles.label}>About us:</Text>
         <Text style={styles.description}>{society.description}</Text>
       </View>
@@ -46,6 +66,34 @@ export default function SocietyProfile({ navigation }) {
           <Text style={styles.viewAll}>View All</Text>
         </Pressable>
       </View>
+
+      {events.length === 0 ? (
+        <Text style={styles.emptyText}>No events yet</Text>
+      ) : (
+        <FlatList
+          data={events}
+          keyExtractor={(item) => item.event_id}
+          numColumns={3}
+          columnWrapperStyle={styles.row}
+          scrollEnabled={false}
+          renderItem={({ item }) => (
+            <Pressable
+              style={styles.eventCard}
+              onPress={() => navigation.navigate("EditEvent", { event: item })}
+            >
+              <Image
+                source={{ uri: item.image_url || DEFAULT_IMAGE }}
+                style={styles.eventImage}
+                resizeMode="cover"
+              />
+              <Text style={styles.eventTitle} numberOfLines={1}>
+                {item.title}
+              </Text>
+              <Text style={styles.eventDate}>{item.event_date}</Text>
+            </Pressable>
+          )}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -83,4 +131,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 16, fontWeight: "bold" },
   viewAll: { color: "#032D39", fontWeight: "600" },
+  emptyText: { color: "#666" },
+  row: { gap: 6, marginBottom: 6 },
+  eventCard: { flex: 1, alignItems: "center" },
+  eventImage: { width: "100%", height: 80, borderRadius: 8 },
+  eventTitle: { fontSize: 10, textAlign: "center", marginTop: 4 },
+  eventDate: { fontSize: 9, color: "#666", textAlign: "center" },
 });

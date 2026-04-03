@@ -5,22 +5,31 @@ import {
   FlatList,
   Pressable,
   ActivityIndicator,
+  Image,
 } from "react-native";
-
 import { useSociety } from "../../../context/SocietyContext";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TextInput } from "react-native";
 
 export default function SocietySelectScreen({ navigation }) {
   const [societies, setSocieties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
-
   const { setSociety } = useSociety();
+  const [query, setQuery] = useState("");
+
+  const filteredSocieties = societies.filter((s) =>
+    s.society_name.toLowerCase().includes(query.toLowerCase())
+  );
 
   useEffect(() => {
     const fetchSocieties = async () => {
-      const { data, error } = await supabase.from("society").select("*");
+      const { data, error } = await supabase
+        .from("society")
+        .select("society_id, society_name, image_url")
+        .order("society_name", { ascending: true });
       if (!error) setSocieties(data);
       setLoading(false);
     };
@@ -29,19 +38,23 @@ export default function SocietySelectScreen({ navigation }) {
 
   const handleContinue = () => {
     if (!selected) return;
-
-    setSociety(selected); // ✅ store globally
-    navigation.navigate("LeaderFlow"); // ✅ no params needed
+    setSociety(selected);
+    navigation.navigate("LeaderFlow");
   };
 
   if (loading) return <ActivityIndicator />;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Select Your Society</Text>
-
+      <TextInput
+        placeholder="Search societies..."
+        value={query}
+        onChangeText={setQuery}
+        style={styles.searchBar}
+      />
       <FlatList
-        data={societies}
+        data={filteredSocieties}
         keyExtractor={(item) => item.society_id}
         renderItem={({ item }) => (
           <Pressable
@@ -51,6 +64,15 @@ export default function SocietySelectScreen({ navigation }) {
             ]}
             onPress={() => setSelected(item)}
           >
+            <Image
+              source={{
+                uri:
+                  item.image_url ||
+                  "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop",
+              }}
+              style={styles.societyImage}
+              resizeMode="cover"
+            />
             <Text style={styles.name}>{item.society_name}</Text>
           </Pressable>
         )}
@@ -63,32 +85,25 @@ export default function SocietySelectScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>Continue</Text>
       </Pressable>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
+  container: { flex: 1, padding: 20, paddingTop: 60 },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
   card: {
     padding: 15,
     backgroundColor: "#eee",
     borderRadius: 8,
     marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
-  selectedCard: {
-    backgroundColor: "#cce5ff",
-  },
-  name: {
-    fontSize: 16,
-  },
+  selectedCard: { backgroundColor: "#cce5ff" },
+  name: { fontSize: 16 },
+  societyImage: { width: 45, height: 45, borderRadius: 22 },
   button: {
     marginTop: 20,
     padding: 15,
@@ -96,11 +111,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
-  disabled: {
-    backgroundColor: "#aaa",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
+  disabled: { backgroundColor: "#aaa" },
+  buttonText: { color: "white", fontWeight: "bold" },
 });
