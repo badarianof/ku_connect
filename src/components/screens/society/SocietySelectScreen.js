@@ -5,18 +5,24 @@ import {
   FlatList,
   Pressable,
   ActivityIndicator,
-  SafeAreaView,
   Image,
 } from "react-native";
 import { useSociety } from "../../../context/SocietyContext";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TextInput } from "react-native";
 
 export default function SocietySelectScreen({ navigation }) {
   const [societies, setSocieties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const { setSociety } = useSociety();
+  const [query, setQuery] = useState("");
+
+  const filteredSocieties = societies.filter((s) =>
+    s.society_name.toLowerCase().includes(query.toLowerCase())
+  );
 
   useEffect(() => {
     const fetchSocieties = async () => {
@@ -41,9 +47,14 @@ export default function SocietySelectScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Select Your Society</Text>
-
+      <TextInput
+        placeholder="Search societies..."
+        value={query}
+        onChangeText={setQuery}
+        style={styles.searchBar}
+      />
       <FlatList
-        data={societies}
+        data={filteredSocieties}
         keyExtractor={(item) => item.society_id}
         renderItem={({ item }) => (
           <Pressable
