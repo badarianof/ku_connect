@@ -180,9 +180,27 @@ export default function StudentProfile({ navigation }) {
             </Text>
             <Pressable
               style={styles.closeButton}
-              onPress={() => setSelectedSociety(null)}
+              onPress={async () => {
+                const {
+                  data: { user },
+                } = await supabase.auth.getUser();
+                await supabase
+                  .from("follows")
+                  .delete()
+                  .eq("student_id", user.id)
+                  .eq("society_id", selectedSociety.society_id);
+
+                setFollowedSocieties((prev) =>
+                  prev.filter(
+                    (s) => s.society_id !== selectedSociety.society_id
+                  )
+                );
+                setSelectedSociety(null);
+              }}
             >
-              <Text style={styles.closeText}>Close</Text>
+              <Text style={styles.closeText}>
+                Following (tap to unfollow)
+              </Text>
             </Pressable>
           </View>
         </View>
