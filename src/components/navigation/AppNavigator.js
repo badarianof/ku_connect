@@ -5,14 +5,13 @@ import SocietySelectScreen from "../screens/society/SocietySelectScreen";
 import LeaderNavigator from "./society/LeaderNavigator";
 import StudentLoginScreen from "../screens/student/StudentLoginScreen";
 import StudentSignupScreen from "../screens/student/SignUpScreen";
-import StudentHomeScreen from "../screens/student/StudentHomeScreen";
+import SUNavigator from "./su/SUNavigator";
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   return (
     <Stack.Navigator>
-      {/* START HERE */}
       <Stack.Screen
         name="RoleSelect"
         component={RoleSelectScreen}
@@ -20,11 +19,6 @@ export default function AppNavigator() {
       />
 
       {/* STUDENT AUTH */}
-      {/* <Stack.Screen
-        name="StudentHomeScreen"
-        component={StudentHomeScreen}
-        options={{ headerShown: false }}
-      /> */}
       <Stack.Screen
         name="StudentLogin"
         component={StudentLoginScreen}
@@ -52,6 +46,13 @@ export default function AppNavigator() {
       <Stack.Screen
         name="LeaderFlow"
         component={LeaderNavigator}
+        options={{ headerShown: false }}
+      />
+
+      {/* SU SIDE */}
+      <Stack.Screen
+        name="SUTabs"
+        component={SUNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
