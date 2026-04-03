@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
+import { Modal } from "react-native";
 
 export default function StudentProfile({ navigation }) {
   const [student, setStudent] = useState(null);
@@ -20,6 +21,8 @@ export default function StudentProfile({ navigation }) {
   const [eventNotifications, setEventNotifications] = useState(false);
   const [societyUpdates, setSocietyUpdates] = useState(false);
   const [questionNotifications, setQuestionNotifications] = useState(false);
+
+  const [selectedSociety, setSelectedSociety] = useState(null);
 
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop";
@@ -101,8 +104,9 @@ export default function StudentProfile({ navigation }) {
           renderItem={({ item }) => (
             <Pressable
               style={styles.societyChip}
-              onPress={() =>
-                navigation.navigate("SocietyDetail", { society: item })
+              onPress={
+                () => setSelectedSociety(item)
+                // navigation.navigate("SocietyDetail", { society: item })
               }
             >
               <Image
@@ -154,6 +158,35 @@ export default function StudentProfile({ navigation }) {
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </Pressable>
+
+      <Modal
+        visible={!!selectedSociety}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedSociety(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Image
+              source={{ uri: selectedSociety?.image_url || DEFAULT_IMAGE }}
+              style={styles.modalImage}
+              resizeMode="cover"
+            />
+            <Text style={styles.modalTitle}>
+              {selectedSociety?.society_name}
+            </Text>
+            <Text style={styles.modalDescription}>
+              {selectedSociety?.description}
+            </Text>
+            <Pressable
+              style={styles.closeButton}
+              onPress={() => setSelectedSociety(null)}
+            >
+              <Text style={styles.closeText}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -195,4 +228,30 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   logoutText: { color: "white", fontWeight: "bold" },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalCard: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  },
+  modalImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 8 },
+  modalDescription: { color: "#333", lineHeight: 20, marginBottom: 20 },
+  closeButton: {
+    backgroundColor: "#032D39",
+    padding: 14,
+    borderRadius: 25,
+    alignItems: "center",
+  },
+  closeText: { color: "white", fontWeight: "bold" },
 });
