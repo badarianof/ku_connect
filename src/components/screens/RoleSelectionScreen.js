@@ -7,8 +7,8 @@ export default function RoleSelectScreen({ navigation }) {
 
       <Button
         title="Student"
-        onPress={() => navigation.navigate("StudentLogin")}
-        // onPress={() => navigation.navigate("StudentHomeScreen")}
+        // onPress={() => navigation.navigate("StudentLogin")}
+        onPress={() => navigation.navigate("StudentTabs")}
       />
 
       <Button
