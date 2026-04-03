@@ -98,13 +98,13 @@ export default function StudentSignupScreen({ navigation }) {
         secureTextEntry
       />
       <TextInput
-        placeholder="Course (optional)"
+        placeholder="Course"
         value={course}
         onChangeText={setCourse}
         style={styles.input}
       />
       <TextInput
-        placeholder="Year of Study (optional)"
+        placeholder="Year of Study"
         value={yearOfStudy}
         onChangeText={setYearOfStudy}
         style={styles.input}

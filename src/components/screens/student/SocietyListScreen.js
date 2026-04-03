@@ -56,7 +56,7 @@ export default function SocietyListScreen({ navigation }) {
           .in("society_id", societyIds)
           .order("event_date", { ascending: true });
 
-        console.log("events:", eventsData);
+        // console.log("events:", eventsData);
         if (!eventsError) setEvents(eventsData);
         setLoading(false);
       };

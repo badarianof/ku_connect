@@ -24,7 +24,7 @@ export default function StudentHomeScreen({ navigation }) {
         .gte("event_date", today)
         .order("event_date", { ascending: true });
 
-      console.log("home events:", data);
+      // console.log("home events:", data);
       console.log("error:", error);
 
       if (!error) setEvents(data);

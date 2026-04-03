@@ -16,7 +16,7 @@ export default function EventListScreen({ route, navigation }) {
         .eq("society_id", society.society_id)
         .order("event_date", { ascending: true });
 
-      console.log("events:", data);
+      // console.log("events:", data);
       console.log("error:", error);
 
       if (!error) setEvents(data);
