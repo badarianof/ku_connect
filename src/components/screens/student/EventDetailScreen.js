@@ -14,11 +14,21 @@ export default function EventDetailScreen({ route }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
 
+  const [societyName, setSocietyName] = useState("");
+
   useEffect(() => {
     const fetchLikes = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
+      const { data: societyData } = await supabase
+        .from("society")
+        .select("society_name")
+        .eq("society_id", event.society_id)
+        .single();
+
+      if (societyData) setSocietyName(societyData.society_name);
 
       // get total like count
       const { count } = await supabase
@@ -110,6 +120,18 @@ export default function EventDetailScreen({ route }) {
         <Text>{event.category}</Text>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.label}>Organiser</Text>
+        <Text>{societyName || "Unknown"}</Text>
+      </View>
+
+      {event.additional_link ? (
+        <View style={styles.section}>
+          <Text style={styles.label}>Additional Link</Text>
+          <Text style={styles.link}>{event.additional_link}</Text>
+        </View>
+      ) : null}
+
       <Text style={styles.description}>{event.description}</Text>
     </ScrollView>
   );
@@ -131,4 +153,5 @@ const styles = StyleSheet.create({
   label: { fontWeight: "bold", marginBottom: 4, color: "#666" },
   image: { width: "100%", height: 200, borderRadius: 10, marginBottom: 20 },
   description: { marginTop: 10, lineHeight: 22 },
+  link: { color: "#032D39", textDecorationLine: "underline" },
 });
