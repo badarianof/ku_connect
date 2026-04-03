@@ -5,7 +5,7 @@ import {
   ActivityIndicator,
   Pressable,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "../../../api/supabase";
 import { useSociety } from "../../../context/SocietyContext";
 import { useFocusEffect } from "@react-navigation/native";
@@ -31,7 +31,7 @@ export default function SocietyHomeScreen({ navigation }) {
 
         const { data, error } = await supabase
           .from("event")
-          .select("*")
+          .select("*, likes(count)")
           .eq("society_id", society.society_id)
           .gte("event_date", today)
           .order("event_date", { ascending: true })
@@ -42,7 +42,7 @@ export default function SocietyHomeScreen({ navigation }) {
 
         const { data: pastData, error: pastError } = await supabase
           .from("event")
-          .select("*")
+          .select("*, likes(count)")
           .eq("society_id", society.society_id)
           .lt("event_date", today)
           .order("event_date", { ascending: false })
@@ -75,6 +75,9 @@ export default function SocietyHomeScreen({ navigation }) {
           >
             <Text style={styles.eventTitle}>{upcomingEvent.title}</Text>
             <Text>{upcomingEvent.event_date}</Text>
+            <Text style={styles.likes}>
+              ❤️ {upcomingEvent.likes?.[0]?.count ?? 0} likes
+            </Text>
           </Pressable>
         ) : (
           <Text>No upcoming events</Text>
@@ -91,6 +94,9 @@ export default function SocietyHomeScreen({ navigation }) {
           >
             <Text style={styles.eventTitle}>{pastEvent.title}</Text>
             <Text>{pastEvent.event_date}</Text>
+            <Text style={styles.likes}>
+              ❤️ {pastEvent.likes?.[0]?.count ?? 0} likes
+            </Text>
           </Pressable>
         ) : (
           <Text>No past events</Text>
@@ -111,4 +117,5 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontWeight: "bold", marginBottom: 10 },
   eventTitle: { fontSize: 16, fontWeight: "600" },
+  likes: { color: "#cc0000", marginTop: 4, fontSize: 13 },
 });
