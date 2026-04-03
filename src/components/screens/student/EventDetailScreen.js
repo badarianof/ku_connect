@@ -16,6 +16,10 @@ export default function EventDetailScreen({ route }) {
 
   const [societyName, setSocietyName] = useState("");
 
+  const [userRating, setUserRating] = useState(0);
+  const [hasRated, setHasRated] = useState(false);
+  const [isPastEvent, setIsPastEvent] = useState(false);
+
   useEffect(() => {
     const fetchLikes = async () => {
       const {
@@ -38,6 +42,9 @@ export default function EventDetailScreen({ route }) {
 
       setLikeCount(count || 0);
 
+      const today = new Date().toISOString().split("T")[0];
+      setIsPastEvent(event.event_date < today);
+
       // check if current user liked it
       if (user) {
         const { data } = await supabase
@@ -49,10 +56,48 @@ export default function EventDetailScreen({ route }) {
 
         setIsLiked(!!data);
       }
+
+      if (user) {
+        const { data: ratingData } = await supabase
+          .from("feedback")
+          .select("rating")
+          .eq("event_id", event.event_id)
+          .eq("student_id", user.id)
+          .single();
+
+        if (ratingData) {
+          setUserRating(ratingData.rating);
+          setHasRated(true);
+        }
+      }
     };
 
     fetchLikes();
   }, []);
+
+  const handleRating = async (rating) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      alert("Please log in to rate events");
+      return;
+    }
+
+    const { error } = await supabase.from("feedback").upsert(
+      {
+        event_id: event.event_id,
+        student_id: user.id,
+        rating,
+      },
+      { onConflict: "event_id,student_id" }
+    );
+
+    if (!error) {
+      setUserRating(rating);
+      setHasRated(true);
+    }
+  };
 
   const handleLike = async () => {
     const {
@@ -133,6 +178,26 @@ export default function EventDetailScreen({ route }) {
       ) : null}
 
       <Text style={styles.description}>{event.description}</Text>
+
+      {isPastEvent && (
+        <View style={styles.ratingSection}>
+          <Text style={styles.ratingTitle}>
+            {hasRated ? "Your Rating" : "Rate this Event"}
+          </Text>
+          <View style={styles.stars}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Pressable
+                key={star}
+                onPress={() => !hasRated && handleRating(star)}
+              >
+                <Text style={styles.star}>
+                  {star <= userRating ? "⭐" : "☆"}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -154,4 +219,13 @@ const styles = StyleSheet.create({
   image: { width: "100%", height: 200, borderRadius: 10, marginBottom: 20 },
   description: { marginTop: 10, lineHeight: 22 },
   link: { color: "#032D39", textDecorationLine: "underline" },
+  ratingSection: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+  },
+  ratingTitle: { fontWeight: "bold", marginBottom: 10 },
+  stars: { flexDirection: "row", gap: 8 },
+  star: { fontSize: 28 },
 });
