@@ -22,14 +22,13 @@ export default function SocietyDashboard({ navigation }) {
       const fetchEvents = async () => {
         const { data, error } = await supabase
           .from("event")
-          .select("*")
+          .select("*, likes(count)")
           .eq("society_id", society.society_id)
           .order("event_date", { ascending: true });
 
         if (!error) setEvents(data);
         setLoading(false);
       };
-
       fetchEvents();
     }, [])
   );
@@ -79,6 +78,9 @@ export default function SocietyDashboard({ navigation }) {
               <Text style={styles.date}>{item.event_date}</Text>
               <Text style={styles.status}>
                 {item.event_status ?? "Published"}
+              </Text>
+              <Text style={styles.likes}>
+                ❤️ {item.likes?.[0]?.count ?? 0} likes
               </Text>
 
               <View style={styles.buttons}>
@@ -135,4 +137,5 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   editText: { color: "white", fontWeight: "600" },
+  likes: { color: "#cc0000", marginTop: 4, fontSize: 13 },
 });
