@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
 
@@ -13,22 +7,30 @@ export default function SocietyDetailScreen({ route, navigation }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const DEFAULT_IMAGE =
+    "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop";
+
   useEffect(() => {
     const checkFollowing = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); return; }
-  
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       const { data } = await supabase
         .from("follows")
         .select("*")
         .eq("student_id", user.id)
         .eq("society_id", society.society_id)
         .single();
-  
+
       setIsFollowing(!!data);
       setLoading(false);
     };
-  
+
     checkFollowing();
   }, []);
 
@@ -65,6 +67,11 @@ export default function SocietyDetailScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <Image
+        source={{ uri: society.image_url || DEFAULT_IMAGE }}
+        style={styles.image}
+        resizeMode="cover"
+      />
       <Text style={styles.title}>{society.society_name}</Text>
       <Text style={styles.category}>
         {society.society_category?.category_name}
@@ -112,4 +119,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: { fontWeight: "bold" },
+  image: { width: "100%", aspectRatio: 1, borderRadius: 12, marginBottom: 16 },
 });
