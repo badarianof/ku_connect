@@ -48,9 +48,7 @@ export default function CreateEventsScreen() {
     "Online",
   ];
 
-  const [category, setCategory] = useState(
-    event?.category ? event.category.split(",") : []
-  );
+  const [category, setCategory] = useState([]);
 
   const toggleCategory = (item) => {
     setCategory((prev) =>
@@ -73,8 +71,8 @@ export default function CreateEventsScreen() {
         location,
         description,
         additional_link,
-        image_url,
-        category,
+        image_url: image_url || default_image,
+        category: category.join(","),
       });
 
       if (result?.error) {

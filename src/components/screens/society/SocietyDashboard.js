@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  Image,
 } from "react-native";
 import { useState, useCallback } from "react";
 import { supabase } from "../../../api/supabase";
@@ -74,31 +75,41 @@ export default function SocietyDashboard({ navigation }) {
           keyExtractor={(item) => item.event_id}
           renderItem={({ item }) => (
             <View style={styles.row}>
-              <Text style={styles.eventTitle}>{item.title}</Text>
-              <Text style={styles.date}>{item.event_date}</Text>
-              <Text style={styles.status}>
-                {item.event_status ?? "Published"}
-              </Text>
-              <Text style={styles.likes}>
-                ❤️ {item.likes?.[0]?.count ?? 0} likes
-              </Text>
+              <Image
+                source={{
+                  uri:
+                    item.image_url ||
+                    "https://thumbs.dreamstime.com/b/have-fun-brush-lettering-hand-inspiring-quote-stain-background-motivating-modern-calligraphy-can-be-used-photo-overlays-75591520.jpg?w=768",
+                }}
+                style={styles.eventImage}
+                resizeMode="cover"
+              />
+              <View style={styles.eventInfo}>
+                <Text style={styles.eventTitle}>{item.title}</Text>
+                <Text style={styles.date}>{item.event_date}</Text>
+                <Text style={styles.status}>
+                  {item.event_status ?? "Published"}
+                </Text>
+                <Text style={styles.likes}>
+                  ❤️ {item.likes?.[0]?.count ?? 0} likes
+                </Text>
 
-              <View style={styles.buttons}>
-                <Pressable
-                  style={styles.editButton}
-                  onPress={() =>
-                    navigation.navigate("EditEvent", { event: item })
-                  }
-                >
-                  <Text style={styles.editText}>Edit</Text>
-                </Pressable>
-
-                <Pressable
-                  style={styles.deleteButton}
-                  onPress={() => handleDelete(item.event_id)}
-                >
-                  <Text style={styles.deleteText}>Delete</Text>
-                </Pressable>
+                <View style={styles.buttons}>
+                  <Pressable
+                    style={styles.editButton}
+                    onPress={() =>
+                      navigation.navigate("EditEvent", { event: item })
+                    }
+                  >
+                    <Text style={styles.editText}>Edit</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.deleteButton}
+                    onPress={() => handleDelete(item.event_id)}
+                  >
+                    <Text style={styles.deleteText}>Delete</Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
           )}
@@ -138,4 +149,13 @@ const styles = StyleSheet.create({
   },
   editText: { color: "white", fontWeight: "600" },
   likes: { color: "#cc0000", marginTop: 4, fontSize: 13 },
+  row: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    marginBottom: 10,
+    flexDirection: "row",
+    overflow: "hidden",
+  },
+  eventImage: { width: 90, height: "100%", minHeight: 90 },
+  eventInfo: { flex: 1, padding: 10 },
 });
