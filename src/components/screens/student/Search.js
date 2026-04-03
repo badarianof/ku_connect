@@ -158,6 +158,7 @@ export default function StudentSearch({ navigation }) {
 
       {activeTab === "Society" && (
         <FlatList
+          style={{ marginTop: 8 }}
           data={filteredSocieties}
           keyExtractor={(item) => item.society_id}
           numColumns={2}
@@ -179,6 +180,7 @@ export default function StudentSearch({ navigation }) {
 
       {activeTab === "Events" && (
         <FlatList
+          style={{ marginTop: 8 }}
           data={filteredEvents}
           keyExtractor={(item) => item.event_id}
           numColumns={2}
