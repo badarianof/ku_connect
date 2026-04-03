@@ -8,10 +8,10 @@ import {
   ScrollView,
   FlatList,
   Image,
+  Modal,
 } from "react-native";
 import { useState } from "react";
 import { supabase } from "../../../api/supabase";
-import { Modal } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 
@@ -19,11 +19,9 @@ export default function StudentProfile({ navigation }) {
   const [student, setStudent] = useState(null);
   const [followedSocieties, setFollowedSocieties] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [eventNotifications, setEventNotifications] = useState(false);
   const [societyUpdates, setSocietyUpdates] = useState(false);
   const [questionNotifications, setQuestionNotifications] = useState(false);
-
   const [selectedSociety, setSelectedSociety] = useState(null);
 
   const DEFAULT_IMAGE =
@@ -43,7 +41,12 @@ export default function StudentProfile({ navigation }) {
             .eq("auth_id", user.id)
             .single();
 
-          if (!error) setStudent(data);
+          if (!error) {
+            setStudent(data);
+            setEventNotifications(data.event_notifications ?? false);
+            setSocietyUpdates(data.society_updates ?? false);
+            setQuestionNotifications(data.question_notifications ?? false);
+          }
 
           const { data: followsData, error: followsError } = await supabase
             .from("follows")
@@ -60,6 +63,28 @@ export default function StudentProfile({ navigation }) {
       fetchProfile();
     }, [])
   );
+
+  const handleSavePreferences = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("student")
+      .update({
+        event_notifications: eventNotifications,
+        society_updates: societyUpdates,
+        question_notifications: questionNotifications,
+      })
+      .eq("auth_id", user.id);
+
+    if (error) {
+      alert("Error saving preferences");
+    } else {
+      alert("Preferences saved!");
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -105,10 +130,7 @@ export default function StudentProfile({ navigation }) {
           renderItem={({ item }) => (
             <Pressable
               style={styles.societyChip}
-              onPress={
-                () => setSelectedSociety(item)
-                // navigation.navigate("SocietyDetail", { society: item })
-              }
+              onPress={() => setSelectedSociety(item)}
             >
               <Image
                 source={{ uri: item.image_url || DEFAULT_IMAGE }}
@@ -156,6 +178,10 @@ export default function StudentProfile({ navigation }) {
         </View>
       </View>
 
+      <Pressable style={styles.saveButton} onPress={handleSavePreferences}>
+        <Text style={styles.saveText}>Save Preferences</Text>
+      </Pressable>
+
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </Pressable>
@@ -190,7 +216,6 @@ export default function StudentProfile({ navigation }) {
                   .delete()
                   .eq("student_id", user.id)
                   .eq("society_id", selectedSociety.society_id);
-
                 setFollowedSocieties((prev) =>
                   prev.filter(
                     (s) => s.society_id !== selectedSociety.society_id
@@ -199,7 +224,9 @@ export default function StudentProfile({ navigation }) {
                 setSelectedSociety(null);
               }}
             >
-              <Text style={styles.closeText}>Following (tap to unfollow)</Text>
+              <Text style={styles.closeText}>
+                Following ✓ (tap to unfollow)
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -245,6 +272,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   logoutText: { color: "white", fontWeight: "bold" },
+  saveButton: {
+    backgroundColor: "#9D8B77",
+    padding: 14,
+    borderRadius: 25,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  saveText: { color: "white", fontWeight: "bold" },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
