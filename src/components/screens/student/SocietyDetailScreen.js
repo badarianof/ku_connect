@@ -15,25 +15,20 @@ export default function SocietyDetailScreen({ route, navigation }) {
 
   useEffect(() => {
     const checkFollowing = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
+  
       const { data } = await supabase
         .from("follows")
         .select("*")
         .eq("student_id", user.id)
         .eq("society_id", society.society_id)
         .single();
-
+  
       setIsFollowing(!!data);
       setLoading(false);
     };
-
+  
     checkFollowing();
   }, []);
 

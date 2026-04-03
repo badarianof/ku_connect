@@ -5,17 +5,24 @@ import {
   Switch,
   Pressable,
   ActivityIndicator,
+  ScrollView,
+  FlatList,
+  Image,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
 
 export default function StudentProfile({ navigation }) {
   const [student, setStudent] = useState(null);
+  const [followedSocieties, setFollowedSocieties] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [eventNotifications, setEventNotifications] = useState(false);
   const [societyUpdates, setSocietyUpdates] = useState(false);
   const [questionNotifications, setQuestionNotifications] = useState(false);
+
+  const DEFAULT_IMAGE =
+    "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop";
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -24,16 +31,24 @@ export default function StudentProfile({ navigation }) {
       } = await supabase.auth.getUser();
 
       if (user) {
+        // fetch student profile
         const { data, error } = await supabase
           .from("student")
           .select("*")
           .eq("auth_id", user.id)
           .single();
 
-        console.log("student:", data);
-        console.log("error:", error);
-
         if (!error) setStudent(data);
+
+        // fetch followed societies
+        const { data: followsData, error: followsError } = await supabase
+          .from("follows")
+          .select("society(society_id, society_name, image_url)")
+          .eq("student_id", user.id);
+
+        console.log("follows:", followsData);
+        if (!followsError)
+          setFollowedSocieties(followsData.map((f) => f.society));
       }
 
       setLoading(false);
@@ -50,7 +65,7 @@ export default function StudentProfile({ navigation }) {
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Your Profile</Text>
 
       <View style={styles.card}>
@@ -60,17 +75,48 @@ export default function StudentProfile({ navigation }) {
             {student ? `${student.first_name} ${student.surname}` : "N/A"}
           </Text>
         </View>
-
         <View style={styles.row}>
           <Text style={styles.label}>Role:</Text>
           <Text style={styles.value}>Student</Text>
         </View>
-
         <View style={styles.row}>
           <Text style={styles.label}>Email:</Text>
           <Text style={styles.value}>{student?.email ?? "N/A"}</Text>
         </View>
       </View>
+
+      <Text style={styles.sectionTitle}>Followed Societies</Text>
+
+      {followedSocieties.length === 0 ? (
+        <Text style={styles.emptyText}>
+          You haven't followed any societies yet
+        </Text>
+      ) : (
+        <FlatList
+          horizontal
+          data={followedSocieties}
+          keyExtractor={(item) => item.society_id}
+          showsHorizontalScrollIndicator={false}
+          style={{ marginBottom: 20 }}
+          renderItem={({ item }) => (
+            <Pressable
+              style={styles.societyChip}
+              onPress={() =>
+                navigation.navigate("SocietyDetail", { society: item })
+              }
+            >
+              <Image
+                source={{ uri: item.image_url || DEFAULT_IMAGE }}
+                style={styles.societyImage}
+                resizeMode="cover"
+              />
+              <Text style={styles.societyName} numberOfLines={2}>
+                {item.society_name}
+              </Text>
+            </Pressable>
+          )}
+        />
+      )}
 
       <Text style={styles.sectionTitle}>Preferences</Text>
 
@@ -83,7 +129,6 @@ export default function StudentProfile({ navigation }) {
             trackColor={{ true: "#032D39" }}
           />
         </View>
-
         <View style={styles.preferenceRow}>
           <Text style={styles.preferenceText}>
             Receive updates from followed societies
@@ -94,7 +139,6 @@ export default function StudentProfile({ navigation }) {
             trackColor={{ true: "#032D39" }}
           />
         </View>
-
         <View style={styles.preferenceRow}>
           <Text style={styles.preferenceText}>
             Receive notifications for responses to questions
@@ -110,12 +154,12 @@ export default function StudentProfile({ navigation }) {
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { padding: 20 },
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -132,6 +176,10 @@ const styles = StyleSheet.create({
   label: { fontWeight: "600", width: 60 },
   value: { flex: 1, color: "#333" },
   sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
+  emptyText: { color: "#666", marginBottom: 20 },
+  societyChip: { width: 100, marginRight: 12, alignItems: "center" },
+  societyImage: { width: 80, height: 80, borderRadius: 40, marginBottom: 6 },
+  societyName: { fontSize: 11, textAlign: "center", color: "#333" },
   preferenceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
