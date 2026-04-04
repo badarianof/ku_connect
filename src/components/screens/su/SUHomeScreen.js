@@ -11,6 +11,7 @@ import { useState } from "react";
 import { supabase } from "../../../api/supabase";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import { colors, spacing, radius } from "../../../theme";
 
 export default function SUHomeScreen({ navigation }) {
   const [events, setEvents] = useState([]);
@@ -86,24 +87,74 @@ export default function SUHomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 4 },
-  subtitle: { color: "#666", marginBottom: 20 },
-  empty: { color: "#666" },
+  container: {
+    flex: 1,
+    padding: spacing.xl,
+    backgroundColor: colors.background,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    marginBottom: 4,
+    color: colors.primaryText,
+  },
+  subtitle: {
+    color: colors.grey,
+    marginBottom: spacing.xl,
+    fontSize: 13,
+  },
+  empty: { color: colors.grey },
   card: {
     flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 12,
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    marginBottom: spacing.md,
     overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   image: { width: 90, height: 90 },
-  placeholder: { width: 90, height: 90, backgroundColor: "#eee" },
-  info: { flex: 1, padding: 10 },
-  eventTitle: { fontSize: 14, fontWeight: "600", marginBottom: 4 },
-  detail: { fontSize: 12, color: "#666", marginBottom: 2 },
-  society: { fontSize: 12, color: "#032D39", marginTop: 4 },
-  status: { fontSize: 11, marginTop: 4, fontWeight: "600" },
-  published: { color: "green" },
-  pending: { color: "orange" },
+  placeholder: {
+    width: 90,
+    height: 90,
+    backgroundColor: colors.accent,
+  },
+  info: { flex: 1, padding: spacing.md },
+  eventTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: spacing.xs,
+    color: colors.primaryText,
+  },
+  detail: {
+    fontSize: 12,
+    color: colors.grey,
+    marginBottom: 2,
+  },
+  society: {
+    fontSize: 12,
+    color: colors.primary,
+    marginTop: spacing.xs,
+    fontWeight: "600",
+  },
+  status: {
+    fontSize: 11,
+    marginTop: spacing.xs,
+    fontWeight: "600",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: radius.full,
+    alignSelf: "flex-start",
+  },
+  published: {
+    color: colors.primary,
+    backgroundColor: colors.accent,
+  },
+  pending: {
+    color: "#92400e",
+    backgroundColor: "#FEF3C7",
+  },
 });

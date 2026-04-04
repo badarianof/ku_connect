@@ -37,7 +37,7 @@ export default function SocietyListScreen({ navigation }) {
           .select("society_id")
           .eq("student_id", user.id);
 
-        console.log("follows:", follows);
+        // console.log("follows:", follows);
 
         if (!follows || follows.length === 0) {
           setHasFollows(false);
