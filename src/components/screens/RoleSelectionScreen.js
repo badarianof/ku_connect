@@ -7,7 +7,7 @@ export default function RoleSelectScreen({ navigation }) {
 
       <Button
         title="Student"
-        onPress={() => navigation.navigate("StudentTabs")}
+        onPress={() => navigation.navigate("StudentLogin")}
       />
 
       <Button
@@ -17,7 +17,7 @@ export default function RoleSelectScreen({ navigation }) {
 
       <Pressable
         style={styles.suLink}
-        onPress={() => navigation.navigate("SUTabs")}
+        onPress={() => navigation.navigate("SULogin")}
       >
         <Text style={styles.suText}>SU Staff Access</Text>
       </Pressable>

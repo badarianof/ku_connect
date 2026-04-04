@@ -6,6 +6,7 @@ import LeaderNavigator from "./society/LeaderNavigator";
 import StudentLoginScreen from "../screens/student/StudentLoginScreen";
 import StudentSignupScreen from "../screens/student/SignUpScreen";
 import SUNavigator from "./su/SUNavigator";
+import SULoginScreen from "../screens/su/SULoginScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -53,6 +54,12 @@ export default function AppNavigator() {
       <Stack.Screen
         name="SUTabs"
         component={SUNavigator}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="SULogin"
+        component={SULoginScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
