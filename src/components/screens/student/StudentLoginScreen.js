@@ -1,13 +1,9 @@
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  StyleSheet,
-  Alert,
-} from "react-native";
+import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import { useState } from "react";
 import { supabase } from "../../../api/supabase";
+import ScreenWrapper from "../../../components/layout/ScreenWrapper";
+import Button from "../../../components/layout/Button";
+import { colors, spacing, radius } from "../../../theme";
 
 export default function StudentLoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
@@ -33,49 +29,71 @@ export default function StudentLoginScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Student Login</Text>
-      <Text style={styles.subtitle}>Kingston University students only</Text>
+    <ScreenWrapper>
+      <View style={styles.header}>
+        <Text style={styles.title}>Welcome back</Text>
+        <Text style={styles.subtitle}>Sign in with your KU email</Text>
+      </View>
 
-      <TextInput
-        placeholder="KU Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-        secureTextEntry
-      />
+      <View style={styles.form}>
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+          placeholder="k1234567@kingston.ac.uk"
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          placeholderTextColor={colors.neutral}
+        />
 
-      <Pressable style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Log In</Text>
-      </Pressable>
+        <Text style={styles.label}>Password</Text>
+        <TextInput
+          placeholder="Enter your password"
+          value={password}
+          onChangeText={setPassword}
+          style={styles.input}
+          secureTextEntry
+          placeholderTextColor={colors.neutral}
+        />
 
-      <Pressable onPress={() => navigation.navigate("StudentSignup")}>
-        <Text style={styles.link}>Don't have an account? Sign up</Text>
-      </Pressable>
-    </View>
+        <Button title="Log In" onPress={handleLogin} />
+
+        <Text
+          style={styles.link}
+          onPress={() => navigation.navigate("StudentSignup")}
+        >
+          Don't have an account? Sign up
+        </Text>
+      </View>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: "center" },
-  title: { fontSize: 26, fontWeight: "bold", marginBottom: 6 },
-  subtitle: { color: "#666", marginBottom: 20 },
-  input: { borderWidth: 1, padding: 10, borderRadius: 6, marginBottom: 12 },
-  button: {
-    backgroundColor: "#032D39",
-    padding: 14,
-    borderRadius: 6,
-    alignItems: "center",
-    marginBottom: 12,
+  header: { flex: 1, justifyContent: "center" },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: spacing.xs,
   },
-  buttonText: { color: "white", fontWeight: "bold" },
-  link: { textAlign: "center", color: "#032D39" },
+  subtitle: { color: colors.grey, fontSize: 14 },
+  form: { marginBottom: spacing.xl, gap: spacing.sm },
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.primaryText,
+    marginBottom: 2,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.neutral,
+    padding: spacing.md,
+    borderRadius: radius.sm,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.white,
+    color: colors.primaryText,
+  },
+  link: { textAlign: "center", color: colors.primary, marginTop: spacing.md },
 });
