@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../api/supabase";
+import { colors, spacing, radius } from "../../../theme";
 
 export default function StudentHomeScreen({ navigation }) {
   const [events, setEvents] = useState([]);
@@ -17,37 +18,33 @@ export default function StudentHomeScreen({ navigation }) {
   useEffect(() => {
     const fetchEvents = async () => {
       const today = new Date().toISOString().split("T")[0];
-
       const { data, error } = await supabase
         .from("event")
         .select("*")
         .gte("event_date", today)
         .order("event_date", { ascending: true });
-
-      // console.log("home events:", data);
-      console.log("error:", error);
-
       if (!error) setEvents(data);
       setLoading(false);
     };
-
     fetchEvents();
   }, []);
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
+  if (loading)
+    return <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Latest Events</Text>
 
       {events.length === 0 ? (
-        <Text>No upcoming events</Text>
+        <Text style={styles.empty}>No upcoming events</Text>
       ) : (
         <FlatList
           data={events}
           keyExtractor={(item) => item.event_id}
           numColumns={2}
           columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
@@ -64,13 +61,12 @@ export default function StudentHomeScreen({ navigation }) {
               ) : (
                 <View style={styles.placeholder} />
               )}
-              <Text style={styles.eventTitle} numberOfLines={1}>
-                {item.title}
-              </Text>
-              <Text style={styles.date}>{item.event_date}</Text>
-              <Text style={styles.society} numberOfLines={1}>
-                {item.society?.society_name}
-              </Text>
+              <View style={styles.cardContent}>
+                <Text style={styles.eventTitle} numberOfLines={1}>
+                  {item.title}
+                </Text>
+                <Text style={styles.date}>{item.event_date}</Text>
+              </View>
             </Pressable>
           )}
         />
@@ -80,39 +76,33 @@ export default function StudentHomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
-  card: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 12,
+  container: {
+    flex: 1,
+    padding: spacing.xl,
+    backgroundColor: colors.background,
   },
-  eventTitle: { fontSize: 16, fontWeight: "600" },
-  date: { color: "#666", marginTop: 4 },
-  society: { color: "#032D39", marginTop: 4 },
-  location: { color: "#666", marginTop: 2 },
-
-  row: { justifyContent: "space-between" },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.primaryText,
+    marginBottom: spacing.lg,
+  },
+  empty: { color: colors.grey },
+  row: { justifyContent: "space-between", marginBottom: spacing.md },
   card: {
     width: "48%",
-    marginBottom: 12,
-    backgroundColor: "#fff",
-    borderRadius: 10,
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  image: { width: "100%", height: 120, borderRadius: 10 },
-  placeholder: {
-    width: "100%",
-    height: 120,
-    borderRadius: 10,
-    backgroundColor: "#eee",
-  },
-  eventTitle: { fontSize: 13, fontWeight: "600", padding: 6 },
-  date: { fontSize: 11, color: "#666", paddingHorizontal: 6 },
-  society: {
-    fontSize: 11,
-    color: "#032D39",
-    paddingHorizontal: 6,
-    paddingBottom: 6,
-  },
+  image: { width: "100%", height: 120 },
+  placeholder: { width: "100%", height: 120, backgroundColor: colors.accent },
+  cardContent: { padding: spacing.sm },
+  eventTitle: { fontSize: 13, fontWeight: "600", color: colors.primaryText },
+  date: { fontSize: 11, color: colors.grey, marginTop: 2 },
 });
