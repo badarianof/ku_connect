@@ -4,6 +4,8 @@ import StudentHomeScreen from "../../screens/student/StudentHomeScreen";
 import SocietyListScreen from "../../screens/student/SocietyListScreen";
 import Search from "../../screens/student/Search";
 import Profile from "../../screens/student/Profile";
+// import { Ionicons } from "@expo/vector-icons";
+// import { colors } from "../../theme";
 
 const Tab = createBottomTabNavigator();
 
