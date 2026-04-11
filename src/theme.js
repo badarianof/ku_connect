@@ -4,7 +4,7 @@ export const colors = {
   primary: "#032D39",
   neutral: "#9D8B77",
   accent: "#E7D2CF",
-  card: "#EED7A1",
+  card: "#FFF1CF",
   white: "#FFFFFF",
   error: "#cc0000",
   grey: "#666666",
