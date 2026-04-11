@@ -2,12 +2,15 @@ import {
   View,
   Text,
   TextInput,
-  Pressable,
   StyleSheet,
   Alert,
+  ScrollView,
 } from "react-native";
 import { useState } from "react";
 import { supabase } from "../../../api/supabase";
+import ScreenWrapper from "../../../components/layout/ScreenWrapper";
+import Button from "../../../components/layout/Button";
+import { colors, spacing, radius } from "../../../theme";
 
 export default function StudentSignupScreen({ navigation }) {
   const [firstName, setFirstName] = useState("");
@@ -19,36 +22,43 @@ export default function StudentSignupScreen({ navigation }) {
 
   const handleSignup = async () => {
     if (!firstName || !surname || !email || !password) {
-      Alert.alert("Please fill in all required fields");
+      Alert.alert(
+        "Missing fields",
+        "Please fill in your name, email and password."
+      );
       return;
     }
 
     if (!email.endsWith("@kingston.ac.uk")) {
       Alert.alert(
-        "Please use your Kingston University email (@kingston.ac.uk)"
+        "Invalid email",
+        "Please use your Kingston University email address ending in @kingston.ac.uk"
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert(
+        "Weak password",
+        "Your password must be at least 6 characters."
       );
       return;
     }
 
     try {
-      // create auth user
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      const { data, error } = await supabase.auth.signUp({ email, password });
 
       if (error) {
         Alert.alert("Signup failed", error.message);
         return;
       }
 
-      // 2. insert into student table
       const { error: profileError } = await supabase.from("student").insert({
         auth_id: data.user.id,
         first_name: firstName,
         surname,
         email,
-        course,
+        course: course || null,
         year_of_study: yearOfStudy ? parseInt(yearOfStudy) : null,
       });
 
@@ -66,74 +76,116 @@ export default function StudentSignupScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Kingston University students only</Text>
+    <ScreenWrapper style={{ padding: 0 }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Kingston University students only</Text>
+        </View>
 
-      <TextInput
-        placeholder="First Name"
-        value={firstName}
-        onChangeText={setFirstName}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Surname"
-        value={surname}
-        onChangeText={setSurname}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="KU Email (@kingston.ac.uk)"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-        secureTextEntry
-      />
-      <TextInput
-        placeholder="Course"
-        value={course}
-        onChangeText={setCourse}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Year of Study"
-        value={yearOfStudy}
-        onChangeText={setYearOfStudy}
-        style={styles.input}
-        keyboardType="numeric"
-      />
+        <View style={styles.form}>
+          <Text style={styles.label}>First Name</Text>
+          <TextInput
+            placeholder="First Name"
+            value={firstName}
+            onChangeText={setFirstName}
+            style={styles.input}
+            placeholderTextColor={colors.neutral}
+          />
 
-      <Pressable style={styles.button} onPress={handleSignup}>
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </Pressable>
+          <Text style={styles.label}>Surname</Text>
+          <TextInput
+            placeholder="Surname"
+            value={surname}
+            onChangeText={setSurname}
+            style={styles.input}
+            placeholderTextColor={colors.neutral}
+          />
 
-      <Pressable onPress={() => navigation.navigate("StudentLogin")}>
-        <Text style={styles.link}>Already have an account? Log in</Text>
-      </Pressable>
-    </View>
+          <Text style={styles.label}>KU Email</Text>
+          <TextInput
+            placeholder="k1234567@kingston.ac.uk"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            placeholderTextColor={colors.neutral}
+          />
+
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            placeholder="Min. 6 characters"
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+            secureTextEntry
+            placeholderTextColor={colors.neutral}
+          />
+
+          <Text style={styles.label}>
+            Course <Text style={styles.optional}>(optional)</Text>
+          </Text>
+          <TextInput
+            placeholder="e.g. Computer Science"
+            value={course}
+            onChangeText={setCourse}
+            style={styles.input}
+            placeholderTextColor={colors.neutral}
+          />
+
+          <Text style={styles.label}>
+            Year of Study <Text style={styles.optional}>(optional)</Text>
+          </Text>
+          <TextInput
+            placeholder="e.g. 2"
+            value={yearOfStudy}
+            onChangeText={setYearOfStudy}
+            style={styles.input}
+            keyboardType="numeric"
+            placeholderTextColor={colors.neutral}
+          />
+
+          <Button title="Sign Up" onPress={handleSignup} />
+
+          <Text
+            style={styles.link}
+            onPress={() => navigation.navigate("StudentLogin")}
+          >
+            Already have an account? Log in
+          </Text>
+        </View>
+      </ScrollView>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: "center" },
-  title: { fontSize: 26, fontWeight: "bold", marginBottom: 6 },
-  subtitle: { color: "#666", marginBottom: 20 },
-  input: { borderWidth: 1, padding: 10, borderRadius: 6, marginBottom: 12 },
-  button: {
-    backgroundColor: "#032D39",
-    padding: 14,
-    borderRadius: 6,
-    alignItems: "center",
-    marginBottom: 12,
+  container: { padding: spacing.xl, flexGrow: 1 },
+  header: { marginTop: spacing.xl, marginBottom: spacing.xl },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: spacing.xs,
   },
-  buttonText: { color: "white", fontWeight: "bold" },
-  link: { textAlign: "center", color: "#032D39" },
+  subtitle: { color: colors.grey, fontSize: 14 },
+  form: { gap: spacing.xs },
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.primaryText,
+    marginBottom: 2,
+  },
+  optional: { fontWeight: "400", color: colors.grey },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.neutral,
+    padding: spacing.md,
+    borderRadius: radius.sm,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.white,
+    color: colors.primaryText,
+  },
+  link: { textAlign: "center", color: colors.primary, marginTop: spacing.md },
 });
