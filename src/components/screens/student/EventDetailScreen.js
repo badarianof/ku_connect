@@ -8,24 +8,26 @@ import {
 } from "react-native";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
+import { colors, spacing, radius } from "../../../theme";
 
 export default function EventDetailScreen({ route }) {
   const { event } = route.params;
+
+  // State for like functionality
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
 
+  // State for organiser name fetched from society table
   const [societyName, setSocietyName] = useState("");
 
-  const [userRating, setUserRating] = useState(0);
-  const [hasRated, setHasRated] = useState(false);
-  const [isPastEvent, setIsPastEvent] = useState(false);
-
+  // Fetch likes and society name on mount
   useEffect(() => {
-    const fetchLikes = async () => {
+    const fetchData = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
+      // Fetch society name using society_id from event
       const { data: societyData } = await supabase
         .from("society")
         .select("society_name")
@@ -34,7 +36,7 @@ export default function EventDetailScreen({ route }) {
 
       if (societyData) setSocietyName(societyData.society_name);
 
-      // get total like count
+      // Get total like count for this event
       const { count } = await supabase
         .from("likes")
         .select("*", { count: "exact" })
@@ -42,10 +44,7 @@ export default function EventDetailScreen({ route }) {
 
       setLikeCount(count || 0);
 
-      const today = new Date().toISOString().split("T")[0];
-      setIsPastEvent(event.event_date < today);
-
-      // check if current user liked it
+      // Check if the current user has already liked this event
       if (user) {
         const { data } = await supabase
           .from("likes")
@@ -56,49 +55,12 @@ export default function EventDetailScreen({ route }) {
 
         setIsLiked(!!data);
       }
-
-      if (user) {
-        const { data: ratingData } = await supabase
-          .from("feedback")
-          .select("rating")
-          .eq("event_id", event.event_id)
-          .eq("student_id", user.id)
-          .single();
-
-        if (ratingData) {
-          setUserRating(ratingData.rating);
-          setHasRated(true);
-        }
-      }
     };
 
-    fetchLikes();
+    fetchData();
   }, []);
 
-  const handleRating = async (rating) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      alert("Please log in to rate events");
-      return;
-    }
-
-    const { error } = await supabase.from("feedback").upsert(
-      {
-        event_id: event.event_id,
-        student_id: user.id,
-        rating,
-      },
-      { onConflict: "event_id,student_id" }
-    );
-
-    if (!error) {
-      setUserRating(rating);
-      setHasRated(true);
-    }
-  };
-
+  // Handle like and unlike toggle
   const handleLike = async () => {
     const {
       data: { user },
@@ -109,6 +71,7 @@ export default function EventDetailScreen({ route }) {
     }
 
     if (isLiked) {
+      // Remove like from database
       await supabase
         .from("likes")
         .delete()
@@ -118,6 +81,7 @@ export default function EventDetailScreen({ route }) {
       setIsLiked(false);
       setLikeCount((prev) => prev - 1);
     } else {
+      // Add like to database
       await supabase
         .from("likes")
         .insert({ event_id: event.event_id, student_id: user.id });
@@ -129,6 +93,7 @@ export default function EventDetailScreen({ route }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* Event cover image */}
       {event.image_url ? (
         <Image
           source={{ uri: event.image_url }}
@@ -137,6 +102,7 @@ export default function EventDetailScreen({ route }) {
         />
       ) : null}
 
+      {/* Title row with like button */}
       <View style={styles.titleRow}>
         <Text style={styles.title}>{event.title}</Text>
         <Pressable onPress={handleLike} style={styles.likeButton}>
@@ -145,87 +111,83 @@ export default function EventDetailScreen({ route }) {
         </Pressable>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.label}>Date</Text>
-        <Text>{event.event_date}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Time</Text>
-        <Text>{event.time}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Location</Text>
-        <Text>{event.location}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Category</Text>
-        <Text>{event.category}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.label}>Organiser</Text>
-        <Text>{societyName || "Unknown"}</Text>
-      </View>
-
-      {event.additional_link ? (
+      {/* Event details card */}
+      <View style={styles.detailsCard}>
         <View style={styles.section}>
-          <Text style={styles.label}>Additional Link</Text>
-          <Text style={styles.link}>{event.additional_link}</Text>
+          <Text style={styles.label}>Date</Text>
+          <Text style={styles.value}>{event.event_date}</Text>
         </View>
-      ) : null}
 
-      <Text style={styles.description}>{event.description}</Text>
+        <View style={styles.section}>
+          <Text style={styles.label}>Time</Text>
+          <Text style={styles.value}>{event.time}</Text>
+        </View>
 
-      {isPastEvent && (
-        <View style={styles.ratingSection}>
-          <Text style={styles.ratingTitle}>
-            {hasRated ? "Your Rating" : "Rate this Event"}
-          </Text>
-          <View style={styles.stars}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Pressable
-                key={star}
-                onPress={() => !hasRated && handleRating(star)}
-              >
-                <Text style={styles.star}>
-                  {star <= userRating ? "⭐" : "☆"}
-                </Text>
-              </Pressable>
-            ))}
+        <View style={styles.section}>
+          <Text style={styles.label}>Location</Text>
+          <Text style={styles.value}>{event.location}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>Organiser</Text>
+          <Text style={styles.value}>{societyName || "Unknown"}</Text>
+        </View>
+
+        {/* Only show additional link if it exists */}
+        {event.additional_link ? (
+          <View style={styles.section}>
+            <Text style={styles.label}>Additional Link</Text>
+            <Text style={styles.link}>{event.additional_link}</Text>
           </View>
-        </View>
-      )}
+        ) : null}
+
+        {/* Event description */}
+        {event.description ? (
+          <View style={styles.section}>
+            <Text style={styles.label}>Description</Text>
+            <Text style={styles.value}>{event.description}</Text>
+          </View>
+        ) : null}
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
+  container: { padding: spacing.xl, backgroundColor: colors.background },
+  image: {
+    width: "100%",
+    height: 200,
+    borderRadius: radius.md,
+    marginBottom: spacing.lg,
+  },
   titleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: spacing.lg,
   },
-  title: { fontSize: 22, fontWeight: "bold", flex: 1 },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    flex: 1,
+    color: colors.primaryText,
+  },
   likeButton: { alignItems: "center" },
   heart: { fontSize: 24 },
-  likeCount: { fontSize: 12, color: "#666" },
-  section: { marginBottom: 15 },
-  label: { fontWeight: "bold", marginBottom: 4, color: "#666" },
-  image: { width: "100%", height: 200, borderRadius: 10, marginBottom: 20 },
-  description: { marginTop: 10, lineHeight: 22 },
-  link: { color: "#032D39", textDecorationLine: "underline" },
-  ratingSection: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: "#fff",
-    borderRadius: 10,
+  likeCount: { fontSize: 12, color: colors.grey },
+  detailsCard: {
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    padding: spacing.lg,
   },
-  ratingTitle: { fontWeight: "bold", marginBottom: 10 },
-  stars: { flexDirection: "row", gap: 8 },
-  star: { fontSize: 28 },
+  section: { marginBottom: spacing.md },
+  label: {
+    fontWeight: "bold",
+    marginBottom: 4,
+    color: colors.primaryText,
+    fontSize: 13,
+  },
+  value: { color: colors.primaryText, lineHeight: 22 },
+  link: { color: colors.primary, textDecorationLine: "underline" },
 });
