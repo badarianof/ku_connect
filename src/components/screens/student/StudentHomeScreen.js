@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   row: { justifyContent: "space-between", marginBottom: spacing.md },
   card: {
     width: "48%",
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
     borderRadius: radius.md,
     overflow: "hidden",
     shadowColor: "#000",
