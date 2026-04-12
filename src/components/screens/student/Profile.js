@@ -14,19 +14,27 @@ import { useState } from "react";
 import { supabase } from "../../../api/supabase";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import { colors, spacing, radius } from "../../../theme";
 
 export default function StudentProfile({ navigation }) {
+  // Student profile data
   const [student, setStudent] = useState(null);
+  // List of societies the student follows
   const [followedSocieties, setFollowedSocieties] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Notification preference toggles
   const [eventNotifications, setEventNotifications] = useState(false);
   const [societyUpdates, setSocietyUpdates] = useState(false);
   const [questionNotifications, setQuestionNotifications] = useState(false);
+
+  // Selected society for modal popup
   const [selectedSociety, setSelectedSociety] = useState(null);
 
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop";
 
+  // Refetch profile data every time screen comes into focus
   useFocusEffect(
     useCallback(() => {
       const fetchProfile = async () => {
@@ -35,6 +43,7 @@ export default function StudentProfile({ navigation }) {
         } = await supabase.auth.getUser();
 
         if (user) {
+          // Fetch student profile and load saved preferences
           const { data, error } = await supabase
             .from("student")
             .select("*")
@@ -48,6 +57,7 @@ export default function StudentProfile({ navigation }) {
             setQuestionNotifications(data.question_notifications ?? false);
           }
 
+          // Fetch societies the student follows
           const { data: followsData, error: followsError } = await supabase
             .from("follows")
             .select("society(society_id, society_name, image_url, description)")
@@ -64,6 +74,7 @@ export default function StudentProfile({ navigation }) {
     }, [])
   );
 
+  // Save notification preferences to Supabase
   const handleSavePreferences = async () => {
     const {
       data: { user },
@@ -86,17 +97,20 @@ export default function StudentProfile({ navigation }) {
     }
   };
 
+  // Sign out and navigate back to role selection
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigation.navigate("RoleSelect");
   };
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
+  if (loading)
+    return <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Your Profile</Text>
 
+      {/* Student info card */}
       <View style={styles.card}>
         <View style={styles.row}>
           <Text style={styles.label}>Name:</Text>
@@ -114,8 +128,8 @@ export default function StudentProfile({ navigation }) {
         </View>
       </View>
 
+      {/* Followed societies horizontal list */}
       <Text style={styles.sectionTitle}>Followed Societies</Text>
-
       {followedSocieties.length === 0 ? (
         <Text style={styles.emptyText}>
           You haven't followed any societies yet
@@ -126,8 +140,9 @@ export default function StudentProfile({ navigation }) {
           data={followedSocieties}
           keyExtractor={(item) => item.society_id}
           showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: 20 }}
+          style={{ marginBottom: spacing.lg }}
           renderItem={({ item }) => (
+            // Tap society chip to open modal with details
             <Pressable
               style={styles.societyChip}
               onPress={() => setSelectedSociety(item)}
@@ -145,15 +160,15 @@ export default function StudentProfile({ navigation }) {
         />
       )}
 
+      {/* Notification preferences */}
       <Text style={styles.sectionTitle}>Preferences</Text>
-
       <View style={styles.card}>
         <View style={styles.preferenceRow}>
           <Text style={styles.preferenceText}>Receive event notifications</Text>
           <Switch
             value={eventNotifications}
             onValueChange={setEventNotifications}
-            trackColor={{ true: "#032D39" }}
+            trackColor={{ true: colors.primary }}
           />
         </View>
         <View style={styles.preferenceRow}>
@@ -163,7 +178,7 @@ export default function StudentProfile({ navigation }) {
           <Switch
             value={societyUpdates}
             onValueChange={setSocietyUpdates}
-            trackColor={{ true: "#032D39" }}
+            trackColor={{ true: colors.primary }}
           />
         </View>
         <View style={styles.preferenceRow}>
@@ -173,19 +188,22 @@ export default function StudentProfile({ navigation }) {
           <Switch
             value={questionNotifications}
             onValueChange={setQuestionNotifications}
-            trackColor={{ true: "#032D39" }}
+            trackColor={{ true: colors.primary }}
           />
         </View>
       </View>
 
+      {/* Save preferences button */}
       <Pressable style={styles.saveButton} onPress={handleSavePreferences}>
         <Text style={styles.saveText}>Save Preferences</Text>
       </Pressable>
 
+      {/* Logout button */}
       <Pressable style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </Pressable>
 
+      {/* Society detail modal - shown when tapping a followed society */}
       <Modal
         visible={!!selectedSociety}
         transparent
@@ -205,6 +223,8 @@ export default function StudentProfile({ navigation }) {
             <Text style={styles.modalDescription}>
               {selectedSociety?.description}
             </Text>
+
+            {/* Unfollow button inside modal */}
             <Pressable
               style={styles.closeButton}
               onPress={async () => {
@@ -236,74 +256,98 @@ export default function StudentProfile({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
+  container: { padding: spacing.xl, backgroundColor: colors.background },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: spacing.lg,
+    color: colors.primaryText,
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
   },
-  row: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  label: { fontWeight: "600", width: 60 },
-  value: { flex: 1, color: "#333" },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
-  emptyText: { color: "#666", marginBottom: 20 },
-  societyChip: { width: 100, marginRight: 12, alignItems: "center" },
-  societyImage: { width: 80, height: 80, borderRadius: 40, marginBottom: 6 },
-  societyName: { fontSize: 11, textAlign: "center", color: "#333" },
+  row: { flexDirection: "row", alignItems: "center", marginBottom: spacing.md },
+  label: { fontWeight: "600", width: 60, color: colors.primaryText },
+  value: { flex: 1, color: colors.primaryText },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: spacing.md,
+    color: colors.primaryText,
+  },
+  emptyText: { color: colors.grey, marginBottom: spacing.lg },
+  societyChip: { width: 100, marginRight: spacing.md, alignItems: "center" },
+  societyImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: spacing.xs,
+  },
+  societyName: { fontSize: 11, textAlign: "center", color: colors.primaryText },
   preferenceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
-  preferenceText: { flex: 1, marginRight: 10, color: "#333" },
-  logoutButton: {
-    backgroundColor: "#032D39",
-    padding: 14,
-    borderRadius: 25,
-    alignItems: "center",
-    marginTop: 10,
+  preferenceText: {
+    flex: 1,
+    marginRight: spacing.sm,
+    color: colors.primaryText,
   },
-  logoutText: { color: "white", fontWeight: "bold" },
   saveButton: {
-    backgroundColor: "#9D8B77",
-    padding: 14,
-    borderRadius: 25,
+    backgroundColor: colors.neutral,
+    padding: spacing.md,
+    borderRadius: radius.full,
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: spacing.sm,
   },
-  saveText: { color: "white", fontWeight: "bold" },
+  saveText: { color: colors.white, fontWeight: "bold" },
+  logoutButton: {
+    backgroundColor: colors.primary,
+    padding: spacing.md,
+    borderRadius: radius.full,
+    alignItems: "center",
+    marginTop: spacing.sm,
+  },
+  logoutText: { color: colors.white, fontWeight: "bold" },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
   },
   modalCard: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
+    backgroundColor: colors.white,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    padding: spacing.xl,
   },
   modalImage: {
     width: "100%",
     height: 150,
-    borderRadius: 12,
-    marginBottom: 12,
+    borderRadius: radius.md,
+    marginBottom: spacing.md,
   },
-  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 8 },
-  modalDescription: { color: "#333", lineHeight: 20, marginBottom: 20 },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: spacing.sm,
+    color: colors.primaryText,
+  },
+  modalDescription: {
+    color: colors.primaryText,
+    lineHeight: 20,
+    marginBottom: spacing.lg,
+  },
   closeButton: {
-    backgroundColor: "#032D39",
-    padding: 14,
-    borderRadius: 25,
+    backgroundColor: colors.primary,
+    padding: spacing.md,
+    borderRadius: radius.full,
     alignItems: "center",
   },
-  closeText: { color: "white", fontWeight: "bold" },
+  closeText: { color: colors.white, fontWeight: "bold" },
 });
