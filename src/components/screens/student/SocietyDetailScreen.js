@@ -1,15 +1,26 @@
-import { View, Text, StyleSheet, Pressable, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Image,
+  ScrollView,
+} from "react-native";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
+import { colors, spacing, radius } from "../../../theme";
 
 export default function SocietyDetailScreen({ route, navigation }) {
   const society = route?.params?.society;
+
+  // Follow state and loading indicator
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop";
 
+  // Check if the current user is already following this society
   useEffect(() => {
     const checkFollowing = async () => {
       const {
@@ -34,6 +45,7 @@ export default function SocietyDetailScreen({ route, navigation }) {
     checkFollowing();
   }, []);
 
+  // Toggle follow/unfollow for this society
   const handleFollow = async () => {
     const {
       data: { user },
@@ -44,6 +56,7 @@ export default function SocietyDetailScreen({ route, navigation }) {
     }
 
     if (isFollowing) {
+      // Remove follow from database
       await supabase
         .from("follows")
         .delete()
@@ -51,6 +64,7 @@ export default function SocietyDetailScreen({ route, navigation }) {
         .eq("society_id", society.society_id);
       setIsFollowing(false);
     } else {
+      // Add follow to database
       await supabase
         .from("follows")
         .insert({ student_id: user.id, society_id: society.society_id });
@@ -66,58 +80,103 @@ export default function SocietyDetailScreen({ route, navigation }) {
     );
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Society cover image */}
       <Image
         source={{ uri: society.image_url || DEFAULT_IMAGE }}
         style={styles.image}
         resizeMode="cover"
       />
-      <Text style={styles.title}>{society.society_name}</Text>
-      <Text style={styles.category}>
-        {society.society_category?.category_name}
-      </Text>
-      <Text style={styles.description}>{society.description}</Text>
 
+      {/* Society name and category */}
+      <View style={styles.header}>
+        <Text style={styles.title}>{society.society_name}</Text>
+        <Text style={styles.category}>
+          {society.society_category?.category_name}
+        </Text>
+      </View>
+
+      {/* Society description */}
+      <View style={styles.card}>
+        <Text style={styles.label}>About us</Text>
+        <Text style={styles.description}>{society.description}</Text>
+      </View>
+
+      {/* Follow/unfollow button - changes appearance based on follow state */}
       <Pressable
         style={[styles.followButton, isFollowing && styles.followingButton]}
         onPress={handleFollow}
         disabled={loading}
       >
         <Text style={styles.followText}>
-          {loading ? "..." : isFollowing ? "Following" : "Follow"}
+          {loading ? "..." : isFollowing ? "Following ✓" : "Follow"}
         </Text>
       </Pressable>
 
+      {/* Navigate to event list for this society */}
       <Pressable
-        style={styles.button}
+        style={styles.eventsButton}
         onPress={() => navigation.navigate("EventList", { society })}
       >
-        <Text style={styles.buttonText}>View Events</Text>
+        <Text style={styles.eventsButtonText}>View Events</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  title: { fontSize: 24, fontWeight: "bold" },
-  category: { fontStyle: "italic", marginBottom: 10 },
-  description: { marginBottom: 20 },
+  container: { padding: spacing.xl, backgroundColor: colors.background },
+  image: {
+    width: "100%",
+    height: 200,
+    borderRadius: radius.md,
+    marginBottom: spacing.lg,
+  },
+  header: { marginBottom: spacing.lg },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: colors.primaryText,
+    marginBottom: spacing.xs,
+  },
+  category: {
+    fontSize: 13,
+    color: colors.neutral,
+    fontStyle: "italic",
+    backgroundColor: colors.accent,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+    alignSelf: "flex-start",
+  },
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  label: {
+    fontWeight: "bold",
+    marginBottom: spacing.xs,
+    color: colors.primaryText,
+  },
+  description: { color: colors.primaryText, lineHeight: 22 },
   followButton: {
-    backgroundColor: "#032D39",
-    padding: 12,
-    borderRadius: 20,
+    backgroundColor: colors.primary,
+    padding: spacing.md,
+    borderRadius: radius.full,
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: spacing.sm,
   },
-  followingButton: { backgroundColor: "#9D8B77" },
-  followText: { color: "white", fontWeight: "bold" },
-  button: {
-    backgroundColor: "#eee",
-    padding: 12,
-    borderRadius: 6,
+  followingButton: { backgroundColor: colors.neutral },
+  followText: { color: colors.white, fontWeight: "bold" },
+  eventsButton: {
+    backgroundColor: colors.card,
+    padding: spacing.md,
+    borderRadius: radius.full,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.primary,
   },
-  buttonText: { fontWeight: "bold" },
-  image: { width: "100%", aspectRatio: 1, borderRadius: 12, marginBottom: 16 },
+  eventsButtonText: { color: colors.primary, fontWeight: "bold" },
 });

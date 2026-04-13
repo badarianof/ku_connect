@@ -1,38 +1,59 @@
-import { View, Button, StyleSheet, Text, Pressable } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import ScreenWrapper from "../layout/ScreenWrapper";
+import Button from "../layout/Button";
+import { colors, spacing } from "../../theme";
 
 export default function RoleSelectScreen({ navigation }) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Select Role</Text>
+    <ScreenWrapper style={styles.wrapper}>
+      <View style={styles.header}>
+        <Text style={styles.appName}>KU Connect</Text>
+        <Text style={styles.tagline}>
+          Your university societies, all in one place
+        </Text>
+      </View>
 
-      <Button
-        title="Student"
-        onPress={() => navigation.navigate("StudentLogin")}
-      />
-
-      <Button
-        title="Society"
-        onPress={() => navigation.navigate("SocietySelectScreen")}
-      />
-
-      <Pressable
-        style={styles.suLink}
-        onPress={() => navigation.navigate("SULogin")}
-      >
-        <Text style={styles.suText}>SU Staff Access</Text>
-      </Pressable>
-    </View>
+      <View style={styles.buttons}>
+        <Button
+          title="I'm a Student"
+          onPress={() => navigation.navigate("StudentLogin")}
+        />
+        <Button
+          title="I'm a Society"
+          variant="secondary"
+          onPress={() => navigation.navigate("SocietySelectScreen")}
+        />
+        <Text
+          style={styles.suText}
+          onPress={() => navigation.navigate("SULogin")}
+        >
+          SU Staff Access
+        </Text>
+      </View>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    gap: 20,
-    paddingHorizontal: 20,
+  wrapper: { justifyContent: "space-between" },
+  header: { flex: 1, justifyContent: "center", alignItems: "center" },
+  appName: {
+    fontSize: 42,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: spacing.sm,
   },
-  title: { fontSize: 22, textAlign: "center", marginBottom: 20 },
-  suLink: { alignItems: "center", marginTop: 20 },
-  suText: { color: "#aaa", fontSize: 12 },
+  tagline: {
+    fontSize: 15,
+    color: colors.grey,
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  buttons: { gap: spacing.md, marginBottom: spacing.xl },
+  suText: {
+    color: colors.neutral,
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: spacing.sm,
+  },
 });

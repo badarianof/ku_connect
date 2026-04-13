@@ -12,17 +12,32 @@ import { useState, useCallback } from "react";
 import { useSociety } from "../../../context/SocietyContext";
 import { supabase } from "../../../api/supabase";
 import { useFocusEffect } from "@react-navigation/native";
+import { colors, spacing, radius } from "../../../theme";
+
+const DEFAULT_IMAGE =
+  "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop";
 
 export default function SocietyProfile({ navigation }) {
+  // Get current society from global context
   const { society } = useSociety();
   const [events, setEvents] = useState([]);
+  // Full society data fetched from Supabase including description
+  const [fullSociety, setFullSociety] = useState(null);
 
-  const DEFAULT_IMAGE =
-    "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop";
-
+  // Refetch society and events every time screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      const fetchEvents = async () => {
+      const fetchData = async () => {
+        // Fetch full society details including description and category
+        const { data: societyData } = await supabase
+          .from("society")
+          .select("*, society_category(category_name)")
+          .eq("society_id", society.society_id)
+          .single();
+
+        if (societyData) setFullSociety(societyData);
+
+        // Fetch up to 6 most recent events for this society
         const { data, error } = await supabase
           .from("event")
           .select("*")
@@ -33,22 +48,25 @@ export default function SocietyProfile({ navigation }) {
         if (!error) setEvents(data);
       };
 
-      fetchEvents();
+      fetchData();
     }, [])
   );
 
-  if (!society) return <ActivityIndicator style={{ flex: 1 }} />;
+  if (!society)
+    return <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Profile</Text>
-
+      {/* Society cover image */}
       <Image
-        source={{ uri: society.image_url || DEFAULT_IMAGE }}
+        source={{
+          uri: fullSociety?.image_url || society.image_url || DEFAULT_IMAGE,
+        }}
         style={styles.image}
         resizeMode="cover"
       />
 
+      {/* Society info card with edit button */}
       <View style={styles.card}>
         <View style={styles.nameRow}>
           <Text style={styles.societyName}>{society.society_name}</Text>
@@ -56,10 +74,23 @@ export default function SocietyProfile({ navigation }) {
             <Text style={styles.editIcon}>✏️</Text>
           </Pressable>
         </View>
-        <Text style={styles.label}>About us:</Text>
-        <Text style={styles.description}>{society.description}</Text>
+
+        {/* Category badge */}
+        {fullSociety?.society_category?.category_name && (
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>
+              {fullSociety.society_category.category_name}
+            </Text>
+          </View>
+        )}
+
+        <Text style={styles.label}>About us</Text>
+        <Text style={styles.description}>
+          {fullSociety?.description ?? "No description yet"}
+        </Text>
       </View>
 
+      {/* Events section header */}
       <View style={styles.eventsHeader}>
         <Text style={styles.sectionTitle}>Our Events</Text>
         <Pressable onPress={() => navigation.navigate("Dashboard")}>
@@ -67,6 +98,7 @@ export default function SocietyProfile({ navigation }) {
         </Pressable>
       </View>
 
+      {/* Events grid - tappable to edit */}
       {events.length === 0 ? (
         <Text style={styles.emptyText}>No events yet</Text>
       ) : (
@@ -99,42 +131,65 @@ export default function SocietyProfile({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 16,
+  container: { padding: spacing.xl, backgroundColor: colors.background },
+  image: {
+    width: "100%",
+    height: 180,
+    borderRadius: radius.md,
+    marginBottom: spacing.lg,
   },
-  image: { width: "100%", height: 180, borderRadius: 12, marginBottom: 16 },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
   },
   nameRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
-  societyName: { fontSize: 18, fontWeight: "bold" },
+  societyName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.primaryText,
+    flex: 1,
+  },
   editIcon: { fontSize: 18 },
-  label: { fontWeight: "600", marginBottom: 4, color: "#666" },
-  description: { color: "#333", lineHeight: 20 },
+  categoryBadge: {
+    backgroundColor: colors.accent,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+    alignSelf: "flex-start",
+    marginBottom: spacing.sm,
+  },
+  categoryText: { fontSize: 12, color: colors.primaryText },
+  label: {
+    fontWeight: "600",
+    marginBottom: spacing.xs,
+    color: colors.grey,
+    fontSize: 13,
+  },
+  description: { color: colors.primaryText, lineHeight: 20 },
   eventsHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
-  sectionTitle: { fontSize: 16, fontWeight: "bold" },
-  viewAll: { color: "#032D39", fontWeight: "600" },
-  emptyText: { color: "#666" },
-  row: { gap: 6, marginBottom: 6 },
+  sectionTitle: { fontSize: 16, fontWeight: "bold", color: colors.primaryText },
+  viewAll: { color: colors.primary, fontWeight: "600" },
+  emptyText: { color: colors.grey, fontStyle: "italic" },
+  row: { gap: spacing.xs, marginBottom: spacing.xs },
   eventCard: { flex: 1, alignItems: "center" },
-  eventImage: { width: "100%", height: 80, borderRadius: 8 },
-  eventTitle: { fontSize: 10, textAlign: "center", marginTop: 4 },
-  eventDate: { fontSize: 9, color: "#666", textAlign: "center" },
+  eventImage: { width: "100%", height: 80, borderRadius: radius.sm },
+  eventTitle: {
+    fontSize: 10,
+    textAlign: "center",
+    marginTop: spacing.xs,
+    color: colors.primaryText,
+  },
+  eventDate: { fontSize: 9, color: colors.grey, textAlign: "center" },
 });

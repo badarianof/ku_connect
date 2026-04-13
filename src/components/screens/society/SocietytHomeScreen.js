@@ -4,19 +4,25 @@ import {
   StyleSheet,
   ActivityIndicator,
   Pressable,
+  ScrollView,
 } from "react-native";
 import { useState } from "react";
 import { supabase } from "../../../api/supabase";
 import { useSociety } from "../../../context/SocietyContext";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import { colors, spacing, radius } from "../../../theme";
 
 export default function SocietyHomeScreen({ navigation }) {
+  // Get current society from global context
   const { society } = useSociety();
+
+  // Upcoming and past event state
   const [upcomingEvent, setUpcomingEvent] = useState(null);
   const [pastEvent, setPastEvent] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Returns time-based greeting message
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";
@@ -24,11 +30,13 @@ export default function SocietyHomeScreen({ navigation }) {
     return "Good Evening";
   };
 
+  // Refetch events every time screen comes into focus
   useFocusEffect(
     useCallback(() => {
       const fetchEvents = async () => {
         const today = new Date().toISOString().split("T")[0];
 
+        // Fetch nearest upcoming event with like count
         const { data, error } = await supabase
           .from("event")
           .select("*, likes(count)")
@@ -40,6 +48,7 @@ export default function SocietyHomeScreen({ navigation }) {
 
         if (!error) setUpcomingEvent(data);
 
+        // Fetch most recent past event with like count
         const { data: pastData, error: pastError } = await supabase
           .from("event")
           .select("*, likes(count)")
@@ -57,14 +66,17 @@ export default function SocietyHomeScreen({ navigation }) {
     }, [])
   );
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
+  if (loading)
+    return <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />;
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Greeting with society name */}
       <Text style={styles.greeting}>
-        {getGreeting()}, {society?.society_name}
+        {getGreeting()}, {society?.society_name} 👋
       </Text>
 
+      {/* Upcoming event card - tappable to edit */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Upcoming Event</Text>
         {upcomingEvent ? (
@@ -74,16 +86,17 @@ export default function SocietyHomeScreen({ navigation }) {
             }
           >
             <Text style={styles.eventTitle}>{upcomingEvent.title}</Text>
-            <Text>{upcomingEvent.event_date}</Text>
+            <Text style={styles.eventDate}>📅 {upcomingEvent.event_date}</Text>
             <Text style={styles.likes}>
               ❤️ {upcomingEvent.likes?.[0]?.count ?? 0} likes
             </Text>
           </Pressable>
         ) : (
-          <Text>No upcoming events</Text>
+          <Text style={styles.emptyText}>No upcoming events</Text>
         )}
       </View>
 
+      {/* Past event card - tappable to edit */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Past Event</Text>
         {pastEvent ? (
@@ -93,29 +106,68 @@ export default function SocietyHomeScreen({ navigation }) {
             }
           >
             <Text style={styles.eventTitle}>{pastEvent.title}</Text>
-            <Text>{pastEvent.event_date}</Text>
+            <Text style={styles.eventDate}>📅 {pastEvent.event_date}</Text>
             <Text style={styles.likes}>
               ❤️ {pastEvent.likes?.[0]?.count ?? 0} likes
             </Text>
           </Pressable>
         ) : (
-          <Text>No past events</Text>
+          <Text style={styles.emptyText}>No past events</Text>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
-  greeting: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
-  card: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
+  container: {
+    padding: spacing.xl,
+    backgroundColor: colors.background,
+    flexGrow: 1,
   },
-  sectionTitle: { fontWeight: "bold", marginBottom: 10 },
-  eventTitle: { fontSize: 16, fontWeight: "600" },
-  likes: { color: "#cc0000", marginTop: 4, fontSize: 13 },
+  greeting: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: spacing.xl,
+  },
+  card: {
+    backgroundColor: colors.card,
+    padding: spacing.lg,
+    borderRadius: radius.md,
+    marginBottom: spacing.md,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontWeight: "bold",
+    marginBottom: spacing.sm,
+    color: colors.primaryText,
+    fontSize: 14,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  eventTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.primaryText,
+    marginBottom: spacing.xs,
+  },
+  eventDate: {
+    fontSize: 13,
+    color: colors.grey,
+    marginBottom: spacing.xs,
+  },
+  likes: {
+    color: colors.error,
+    marginTop: spacing.xs,
+    fontSize: 13,
+  },
+  emptyText: {
+    color: colors.grey,
+    fontStyle: "italic",
+  },
 });

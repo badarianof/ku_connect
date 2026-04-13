@@ -7,10 +7,13 @@ import {
   FlatList,
   ActivityIndicator,
   ScrollView,
+  Image,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../api/supabase";
+import { colors, spacing, radius } from "../../../theme";
 
+// Category options for society filtering
 const CATEGORIES = [
   "All",
   "Academic",
@@ -19,6 +22,8 @@ const CATEGORIES = [
   "Arts & Activities",
   "Liberation & Campaigns",
 ];
+
+// Category options for event filtering
 const EVENT_CATEGORIES = [
   "All",
   "On Campus",
@@ -37,8 +42,10 @@ export default function StudentSearch({ navigation }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch all societies and events on mount
   useEffect(() => {
     const fetchData = async () => {
+      // Fetch societies with their category
       const { data: socData, error: socError } = await supabase
         .from("society")
         .select(`*, society_category(category_name)`)
@@ -46,6 +53,7 @@ export default function StudentSearch({ navigation }) {
 
       if (!socError) setSocieties(socData);
 
+      // Fetch all events ordered by title
       const { data: evData, error: evError } = await supabase
         .from("event")
         .select("*")
@@ -58,6 +66,7 @@ export default function StudentSearch({ navigation }) {
     fetchData();
   }, []);
 
+  // Filter societies by search query and selected category
   const filteredSocieties = societies.filter((s) => {
     const matchesQuery = s.society_name
       .toLowerCase()
@@ -68,6 +77,7 @@ export default function StudentSearch({ navigation }) {
     return matchesQuery && matchesCategory;
   });
 
+  // Filter events by search query and selected category
   const filteredEvents = events.filter((e) => {
     const matchesQuery = e.title.toLowerCase().includes(query.toLowerCase());
     const matchesCategory =
@@ -79,17 +89,21 @@ export default function StudentSearch({ navigation }) {
     return matchesQuery && matchesCategory;
   });
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} />;
+  if (loading)
+    return <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />;
 
   return (
     <View style={styles.container}>
+      {/* Search input */}
       <TextInput
         placeholder="What are you looking for?"
         value={query}
         onChangeText={setQuery}
         style={styles.searchBar}
+        placeholderTextColor={colors.neutral}
       />
 
+      {/* Society / Events tab toggle */}
       <View style={styles.tabs}>
         <Pressable
           style={[styles.tab, activeTab === "Society" && styles.activeTab]}
@@ -127,6 +141,7 @@ export default function StudentSearch({ navigation }) {
 
       <Text style={styles.browseTitle}>Browse by category</Text>
 
+      {/* Horizontal category chips - changes based on active tab */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -156,13 +171,15 @@ export default function StudentSearch({ navigation }) {
         )}
       </ScrollView>
 
+      {/* Society results grid */}
       {activeTab === "Society" && (
         <FlatList
-          style={{ marginTop: 8 }}
+          style={{ marginTop: spacing.sm }}
           data={filteredSocieties}
           keyExtractor={(item) => item.society_id}
           numColumns={2}
           columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
@@ -170,7 +187,16 @@ export default function StudentSearch({ navigation }) {
                 navigation.navigate("SocietyDetail", { society: item })
               }
             >
-              <Text style={styles.societyName} numberOfLines={2}>
+              {item.image_url ? (
+                <Image
+                  source={{ uri: item.image_url }}
+                  style={styles.cardImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.cardImagePlaceholder} />
+              )}
+              <Text style={styles.cardName} numberOfLines={2}>
                 {item.society_name}
               </Text>
             </Pressable>
@@ -178,13 +204,15 @@ export default function StudentSearch({ navigation }) {
         />
       )}
 
+      {/* Events results grid */}
       {activeTab === "Events" && (
         <FlatList
-          style={{ marginTop: 8 }}
+          style={{ marginTop: spacing.sm }}
           data={filteredEvents}
           keyExtractor={(item) => item.event_id}
           numColumns={2}
           columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
@@ -192,7 +220,16 @@ export default function StudentSearch({ navigation }) {
                 navigation.navigate("EventDetail", { event: item })
               }
             >
-              <Text style={styles.societyName} numberOfLines={2}>
+              {item.image_url ? (
+                <Image
+                  source={{ uri: item.image_url }}
+                  style={styles.cardImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.cardImagePlaceholder} />
+              )}
+              <Text style={styles.cardName} numberOfLines={2}>
                 {item.title}
               </Text>
             </Pressable>
@@ -204,45 +241,67 @@ export default function StudentSearch({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: {
+    flex: 1,
+    padding: spacing.xl,
+    backgroundColor: colors.background,
+  },
   searchBar: {
     borderWidth: 1,
-    padding: 10,
-    borderRadius: 25,
-    marginBottom: 16,
+    borderColor: colors.neutral,
+    padding: spacing.md,
+    borderRadius: radius.full,
+    marginBottom: spacing.lg,
+    backgroundColor: colors.white,
+    color: colors.primaryText,
   },
-  tabs: { flexDirection: "row", gap: 10, marginBottom: 20 },
+  tabs: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.lg },
   tab: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: "#032D39",
+    borderColor: colors.primary,
   },
-  activeTab: { backgroundColor: "#032D39" },
-  tabText: { color: "#032D39" },
-  activeTabText: { color: "white" },
-  browseTitle: { fontWeight: "bold", marginBottom: 12 },
-  row: { gap: 8, marginBottom: 8 },
+  activeTab: { backgroundColor: colors.primary },
+  tabText: { color: colors.primary, fontWeight: "500" },
+  activeTabText: { color: colors.white },
+  browseTitle: {
+    fontWeight: "bold",
+    marginBottom: spacing.sm,
+    color: colors.primaryText,
+  },
+  row: { gap: spacing.sm, marginBottom: spacing.sm },
   card: {
     flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 10,
-    alignItems: "center",
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    overflow: "hidden",
   },
-  societyName: { fontSize: 12, textAlign: "center", fontWeight: "500" },
+  cardImage: { width: "100%", height: 90 },
+  cardImagePlaceholder: {
+    width: "100%",
+    height: 90,
+    backgroundColor: colors.accent,
+  },
+  cardName: {
+    fontSize: 12,
+    textAlign: "center",
+    fontWeight: "500",
+    padding: spacing.sm,
+    color: colors.primaryText,
+  },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: "#032D39",
-    marginRight: 8,
+    borderColor: colors.primary,
+    marginRight: spacing.sm,
     height: 32,
     justifyContent: "center",
   },
-  chipSelected: { backgroundColor: "#032D39" },
-  chipText: { color: "#032D39", fontSize: 12 },
-  chipTextSelected: { color: "white", fontSize: 12 },
+  chipSelected: { backgroundColor: colors.primary },
+  chipText: { color: colors.primary, fontSize: 12 },
+  chipTextSelected: { color: colors.white, fontSize: 12 },
 });
