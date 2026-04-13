@@ -212,6 +212,12 @@ export default function StudentProfile({ navigation }) {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
+            <Pressable
+              style={styles.modalClose}
+              onPress={() => setSelectedSociety(null)}
+            >
+              <Text style={styles.modalCloseText}>✕</Text>
+            </Pressable>
             <Image
               source={{ uri: selectedSociety?.image_url || DEFAULT_IMAGE }}
               style={styles.modalImage}
