@@ -39,3 +39,10 @@ export const radius = {
   lg: 20,
   full: 999,
 };
+
+export const tabBarStyle = {
+  backgroundColor: "#9D8B77",
+  borderTopWidth: 0,
+  height: 70,
+  paddingBottom: 8,
+};
