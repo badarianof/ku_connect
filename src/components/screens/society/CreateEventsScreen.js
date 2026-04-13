@@ -1,61 +1,58 @@
 import {
   View,
   TextInput,
-  Button,
   StyleSheet,
   Text,
   ScrollView,
+  Pressable,
 } from "react-native";
 import { useState } from "react";
 import { useSociety } from "../../../context/SocietyContext";
 import { handleCreateEvent } from "../../controller/eventController";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Pressable } from "react-native";
+import { colors, spacing, radius } from "../../../theme";
+import { KeyboardAvoidingView, Platform } from "react-native";
+
+// Available event categories for multi-select
+const CATEGORIES = [
+  "On Campus",
+  "Off Campus",
+  "Free",
+  "Members Only",
+  "Open to All",
+  "Online",
+];
+
+// Default image used when no image URL is provided
+const DEFAULT_IMAGE =
+  "https://thumbs.dreamstime.com/b/have-fun-brush-lettering-hand-inspiring-quote-stain-background-motivating-modern-calligraphy-can-be-used-photo-overlays-75591520.jpg?w=768";
 
 export default function CreateEventsScreen() {
+  // Get current society from global context
   const { society } = useSociety();
 
-  if (!society) {
-    return (
-      <View>
-        <Text>No society selected</Text>
-      </View>
-    );
-  }
-
+  // Form field states
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-
   const [time, setTime] = useState("");
   const [selectedTime, setSelectedTime] = useState(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
-
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [additional_link, setAdditional_link] = useState("");
   const [image_url, setImage_url] = useState("");
-  const default_image =
-    "https://thumbs.dreamstime.com/b/have-fun-brush-lettering-hand-inspiring-quote-stain-background-motivating-modern-calligraphy-can-be-used-photo-overlays-75591520.jpg?w=768";
-
-  const CATEGORIES = [
-    "On Campus",
-    "Off Campus",
-    "Free",
-    "Members Only",
-    "Open to All",
-    "Online",
-  ];
-
   const [category, setCategory] = useState([]);
 
+  // Toggle a category on or off in the selection
   const toggleCategory = (item) => {
     setCategory((prev) =>
       prev.includes(item) ? prev.filter((c) => c !== item) : [...prev, item]
     );
   };
 
+  // Submit new event to Supabase via event controller
   const handleSubmit = async () => {
     if (!title || !date || !time || !location) {
       alert("Please fill in all required fields");
@@ -71,7 +68,8 @@ export default function CreateEventsScreen() {
         location,
         description,
         additional_link,
-        image_url: image_url || default_image,
+        // Use default image if no URL provided
+        image_url: image_url || DEFAULT_IMAGE,
         category: category.join(","),
       });
 
@@ -79,8 +77,7 @@ export default function CreateEventsScreen() {
         alert("Error creating event");
       } else {
         alert("Event created!");
-
-        // reset form
+        // Reset all form fields after successful submission
         setTitle("");
         setDate("");
         setTime("");
@@ -88,7 +85,7 @@ export default function CreateEventsScreen() {
         setDescription("");
         setAdditional_link("");
         setImage_url("");
-        setCategory("");
+        setCategory([]);
       }
     } catch (err) {
       console.log(err);
@@ -96,147 +93,208 @@ export default function CreateEventsScreen() {
     }
   };
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Create Event</Text>
-
-      <TextInput
-        placeholder="Title"
-        value={title}
-        onChangeText={setTitle}
-        style={styles.input}
-      />
-
-      <TextInput
-        placeholder="Description"
-        value={description}
-        onChangeText={setDescription}
-        style={styles.input}
-      />
-
-      <Pressable onPress={() => setShowDatePicker(true)}>
-        <Text style={styles.input}>{date ? date : "Select Date"}</Text>
-      </Pressable>
-
-      {showDatePicker && (
-        <DateTimePicker
-          value={selectedDate || new Date()}
-          mode="date"
-          display="default"
-          onChange={(event, pickedDate) => {
-            setShowDatePicker(false);
-
-            if (pickedDate) {
-              const formatted = pickedDate.toISOString().split("T")[0];
-              setSelectedDate(pickedDate);
-              setDate(formatted);
-            }
-          }}
-        />
-      )}
-
-      <Pressable onPress={() => setShowTimePicker(true)}>
-        <Text style={styles.input}>{time ? time : "Select Time"}</Text>
-      </Pressable>
-
-      {showTimePicker && (
-        <DateTimePicker
-          value={selectedTime || new Date()}
-          mode="time"
-          display="default"
-          onChange={(event, pickedTime) => {
-            setShowTimePicker(false);
-
-            if (pickedTime) {
-              const timeString = pickedTime.toTimeString().slice(0, 5); // HH:MM
-              setSelectedTime(pickedTime);
-              setTime(timeString);
-            }
-          }}
-        />
-      )}
-
-      <TextInput
-        placeholder="Location"
-        value={location}
-        onChangeText={setLocation}
-        style={styles.input}
-      />
-
-      <Text style={styles.label}>Category</Text>
-      <View style={styles.categoryContainer}>
-        {CATEGORIES.map((item) => (
-          <Pressable
-            key={item}
-            style={[
-              styles.categoryChip,
-              category.includes(item) && styles.categoryChipSelected,
-            ]}
-            onPress={() => toggleCategory(item)}
-          >
-            <Text
-              style={[
-                styles.categoryChipText,
-                category.includes(item) && styles.categoryChipTextSelected,
-              ]}
-            >
-              {item}
-            </Text>
-          </Pressable>
-        ))}
+  if (!society) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>No society selected</Text>
       </View>
+    );
+  }
 
-      <TextInput
-        placeholder="Additional Link"
-        value={additional_link}
-        onChangeText={setAdditional_link}
-        style={styles.input}
-      />
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}      >
+        <Text style={styles.title}>Create Event</Text>
 
-      <Text style={styles.label}>Image URL</Text>
-      <TextInput
-        placeholder="Image URL"
-        value={image_url}
-        onChangeText={setImage_url}
-        style={styles.input}
-      />
+        {/* Title field */}
+        <Text style={styles.label}>Title *</Text>
+        <TextInput
+          placeholder="Event title"
+          value={title}
+          onChangeText={setTitle}
+          style={styles.input}
+          placeholderTextColor={colors.neutral}
+        />
 
-      <Button title="Submit Event" onPress={handleSubmit} />
-    </ScrollView>
+        {/* Description field */}
+        <Text style={styles.label}>Description</Text>
+        <TextInput
+          placeholder="What is this event about?"
+          value={description}
+          onChangeText={setDescription}
+          style={[styles.input, styles.multiline]}
+          multiline
+          numberOfLines={3}
+          placeholderTextColor={colors.neutral}
+        />
+
+        {/* Date picker */}
+        <Text style={styles.label}>Date *</Text>
+        <Pressable onPress={() => setShowDatePicker(true)} style={styles.input}>
+          <Text style={{ color: date ? colors.primaryText : colors.neutral }}>
+            {date ? date : "Select Date"}
+          </Text>
+        </Pressable>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate || new Date()}
+            mode="date"
+            display="default"
+            onChange={(event, pickedDate) => {
+              setShowDatePicker(false);
+              if (pickedDate) {
+                const formatted = pickedDate.toISOString().split("T")[0];
+                setSelectedDate(pickedDate);
+                setDate(formatted);
+              }
+            }}
+          />
+        )}
+
+        {/* Time picker */}
+        <Text style={styles.label}>Time *</Text>
+        <Pressable onPress={() => setShowTimePicker(true)} style={styles.input}>
+          <Text style={{ color: time ? colors.primaryText : colors.neutral }}>
+            {time ? time : "Select Time"}
+          </Text>
+        </Pressable>
+
+        {showTimePicker && (
+          <DateTimePicker
+            value={selectedTime || new Date()}
+            mode="time"
+            display="default"
+            onChange={(event, pickedTime) => {
+              setShowTimePicker(false);
+              if (pickedTime) {
+                const timeString = pickedTime.toTimeString().slice(0, 5);
+                setSelectedTime(pickedTime);
+                setTime(timeString);
+              }
+            }}
+          />
+        )}
+
+        {/* Location field */}
+        <Text style={styles.label}>Location *</Text>
+        <TextInput
+          placeholder="Where is this event?"
+          value={location}
+          onChangeText={setLocation}
+          style={styles.input}
+          placeholderTextColor={colors.neutral}
+        />
+
+        {/* Multi-select category chips */}
+        <Text style={styles.label}>Category</Text>
+        <View style={styles.categoryContainer}>
+          {CATEGORIES.map((item) => (
+            <Pressable
+              key={item}
+              style={[
+                styles.chip,
+                category.includes(item) && styles.chipSelected,
+              ]}
+              onPress={() => toggleCategory(item)}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  category.includes(item) && styles.chipTextSelected,
+                ]}
+              >
+                {item}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Additional link field */}
+        <Text style={styles.label}>Additional Link</Text>
+        <TextInput
+          placeholder="Ticket link, sign up form, etc."
+          value={additional_link}
+          onChangeText={setAdditional_link}
+          style={styles.input}
+          placeholderTextColor={colors.neutral}
+        />
+
+        {/* Image URL field */}
+        <Text style={styles.label}>Image URL</Text>
+        <TextInput
+          placeholder="Cover image URL"
+          value={image_url}
+          onChangeText={setImage_url}
+          style={styles.input}
+          placeholderTextColor={colors.neutral}
+        />
+
+        {/* Submit button */}
+        <Pressable style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.submitText}>Create Event</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: spacing.xl,
     flexGrow: 1,
+    backgroundColor: colors.background,
   },
+  emptyContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
+  emptyText: { color: colors.grey },
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: spacing.lg,
+    color: colors.primary,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: spacing.xs,
+    color: colors.grey,
   },
   input: {
     borderWidth: 1,
-    marginBottom: 12,
-    padding: 10,
-    borderRadius: 5,
+    borderColor: colors.neutral,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.sm,
+    backgroundColor: colors.white,
+    color: colors.primaryText,
   },
-
+  multiline: { height: 80, textAlignVertical: "top" },
   categoryContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 12,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
-  categoryChip: {
+  chip: {
     borderWidth: 1,
-    borderColor: "#032D39",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderColor: colors.primary,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
-  categoryChipSelected: { backgroundColor: "#032D39" },
-  categoryChipText: { color: "#032D39" },
-  categoryChipTextSelected: { color: "white" },
+  chipSelected: { backgroundColor: colors.primary },
+  chipText: { color: colors.primary, fontSize: 13 },
+  chipTextSelected: { color: colors.white },
+  submitButton: {
+    backgroundColor: colors.primary,
+    padding: spacing.lg,
+    borderRadius: radius.full,
+    alignItems: "center",
+    marginTop: spacing.md,
+  },
+  submitText: { color: colors.white, fontWeight: "bold", fontSize: 16 },
 });
