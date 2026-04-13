@@ -30,7 +30,15 @@ export default function LeaderNavigator() {
       <Stack.Screen
         name="EditSocietyProfile"
         component={EditSocietyProfile}
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+          headerShown: true,
+          headerTitle: "Edit Event",
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.primary,
+          headerTitleStyle: { fontWeight: "bold" },
+          headerShadowVisible: false,
+        }}
       />
     </Stack.Navigator>
   );
