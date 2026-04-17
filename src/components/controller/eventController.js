@@ -11,7 +11,6 @@ export async function handleCreateEvent(formData) {
     additional_link: formData.additional_link,
     image_url: formData.image_url,
     category: formData.category || "General",
-    // event_status: "pending",
   };
 
   return await createEvent(eventData);

@@ -194,15 +194,4 @@ const styles = StyleSheet.create({
     marginTop: 2,
     paddingBottom: spacing.xs,
   },
-  card: {
-    width: "48%",
-    backgroundColor: "#FFF1CF", 
-    borderRadius: radius.md,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
-  },
 });
