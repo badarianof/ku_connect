@@ -20,12 +20,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.application.kuconnect",
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "VIBRATE"
+        "ACCESS_COARSE_LOCATION"
       ]
     },
     "web": {
@@ -35,6 +33,11 @@
       "@react-native-community/datetimepicker",
       "expo-asset",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b6c567e1-aadf-4821-9cb4-016cb197bc86"
+      }
+    }
   }
 }
