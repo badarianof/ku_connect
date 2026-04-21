@@ -121,8 +121,8 @@ npx expo start
 
 | Variable | Description |
 |---|---|
-| `EXPO_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anonymous key |
+| `EXPO_PUBLIC_SUPABASE_URL` | (https://lkbaavjnyeeuascymbst.supabase.co) |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrYmFhdmpueWVldWFzY3ltYnN0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTE5NTQ0NSwiZXhwIjoyMDg0NzcxNDQ1fQ.vd3Y5uB0jKYP70ZWQ9ZgMqBtBMrURywToWkskkP2yqU |
 
 Never commit your `.env` file — it is included in `.gitignore`
 
