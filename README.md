@@ -95,7 +95,7 @@ src/
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/ku-connect.git
+git clone https://github.com/badarianof/ku-connect.git
 cd ku-connect
 ```
 
